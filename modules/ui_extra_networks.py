@@ -260,12 +260,25 @@ class ExtraNetworksPage:
             If no template is passed: A dictionary containing the generated item's attributes.
         """
         preview = item.get("preview", None)
+        preview_urls = item.get("preview_urls", [])
+        
         style_height = f"height: {shared.opts.extra_networks_card_height}px;" if shared.opts.extra_networks_card_height else ''
         style_width = f"width: {shared.opts.extra_networks_card_width}px;" if shared.opts.extra_networks_card_width else ''
         style_font_size = f"font-size: {shared.opts.extra_networks_card_text_scale*100}%;"
         card_style = style_height + style_width + style_font_size
-        background_image = f'<img src="{html.escape(preview)}" class="preview" loading="lazy">' if preview else ''
-
+        
+        # Handle both single preview (old) and multiple previews (new)
+        if isinstance(preview_urls, list) and len(preview_urls) > 0:
+            # New format: multiple previews
+            preview = preview_urls[0]  # First preview is shown by default
+            preview_data_attr = f'data-preview-urls="{html.escape(json.dumps(preview_urls))}"'
+            preview_count = len(preview_urls)
+        else:
+            # Fallback to old single preview format
+            preview_data_attr = ''
+            preview_count = 1 if preview else 0
+        
+        background_image = f'<img src="{html.escape(preview)}" class="preview" loading="lazy" {preview_data_attr}>' if preview else ''
         onclick = item.get("onclick", None)
         if onclick is None:     #   this path is 'Textual Inversion' and 'Lora'
             # Don't quote prompt/neg_prompt since they are stored as js strings already.
@@ -298,6 +311,15 @@ class ExtraNetworksPage:
                 "extra_networks_tabname": self.extra_networks_tabname,
             }
         )
+
+        # Add preview navigation buttons if multiple previews exist
+        # IMPORTANT: Always define these variables, even if empty
+        btn_nav_prev = ""
+        btn_nav_next = ""
+        if preview_count > 1:
+            btn_nav_prev = f'''<div class="preview-nav-button preview-prev-button card-button" title="Previous preview ({preview_count} total)" onclick="event.stopPropagation(); navigatePreview(event, -1);">‹</div>'''
+            btn_nav_next = f'''<div class="preview-nav-button preview-next-button card-button" title="Next preview ({preview_count} total)" onclick="event.stopPropagation(); navigatePreview(event, 1);">›</div>'''
+
 
         local_path = ""
         filename = item.get("filename", "")
@@ -345,6 +367,8 @@ class ExtraNetworksPage:
             "background_image": background_image,
             "card_clicked": onclick,
             "copy_path_button": btn_copy_path,
+            "nav_prev_button": btn_nav_prev,
+            "nav_next_button": btn_nav_next,
             "description": description,
             "edit_button": btn_edit_item,
             "local_preview": quote_js(item["local_preview"]),
@@ -360,6 +384,15 @@ class ExtraNetworksPage:
             "extra_networks_tabname": self.extra_networks_tabname,
         }
 
+        # ALTERNATIVE: Inject nav buttons directly into copy_path_button
+        # This bypasses the need to modify the HTML template
+        if btn_nav_prev and btn_nav_next:
+            # Check if template has nav_prev_button placeholders
+            if template and '{nav_prev_button}' not in template:
+                # Template doesn't have nav button placeholders, inject directly
+                args['copy_path_button'] = btn_nav_prev + btn_nav_next + args['copy_path_button']
+
+                
         if template:
             return template.format(**args)
         else:
@@ -524,9 +557,13 @@ class ExtraNetworksPage:
         return f"<ul class='tree-list tree-list--tree'>{res}</ul>"
 
     def create_dirs_view_html(self, tabname: str) -> str:
-        """Generates HTML for displaying folders."""
-
-        subdirs = {}
+        """Generates HTML for displaying folders with hierarchical navigation.
+        
+        Generates ALL directory buttons - JavaScript will filter visibility.
+        """
+        
+        # Get all subdirectories (complete tree)
+        all_subdirs = {}
         for parentdir in [os.path.abspath(x) for x in self.allowed_directories_for_previews()]:
             for root, dirs, _ in sorted(os.walk(parentdir, followlinks=True), key=lambda x: shared.natural_sort_key(x[0])):
                 for dirname in sorted(dirs, key=shared.natural_sort_key):
@@ -535,34 +572,54 @@ class ExtraNetworksPage:
                     if not os.path.isdir(x):
                         continue
 
-                    subdir = os.path.abspath(x)[len(parentdir):]
+                    subdir = os.path.abspath(x)[len(parentdir):].replace("\\", "/")
+                    
+                    # Remove leading slash
+                    while subdir.startswith("/"):
+                        subdir = subdir[1:]
 
-                    if shared.opts.extra_networks_dir_button_function:
-                        if not subdir.startswith(os.path.sep):
-                            subdir = os.path.sep + subdir
-                    else:
-                        while subdir.startswith(os.path.sep):
-                            subdir = subdir[1:]
-
+                    # Skip empty directories
                     is_empty = len(os.listdir(x)) == 0
-                    if not is_empty and not subdir.endswith(os.path.sep):
-                        subdir = subdir + os.path.sep
+                    if is_empty:
+                        continue
+                        
+                    # Add trailing slash for directories
+                    if not subdir.endswith("/"):
+                        subdir = subdir + "/"
 
-                    if (os.path.sep + "." in subdir or subdir.startswith(".")) and not shared.opts.extra_networks_show_hidden_directories:
+                    # Skip hidden directories
+                    if ("/." in subdir or subdir.startswith(".")) and not shared.opts.extra_networks_show_hidden_directories:
                         continue
 
-                    subdirs[subdir] = 1
+                    all_subdirs[subdir] = 1
 
-        if subdirs:
-            subdirs = {"": 1, **subdirs}
-
-        subdirs_html = "".join([f"""
-        <button class='lg secondary gradio-button custom-button{" search-all" if subdir == "" else ""}' onclick='extraNetworksSearchButton("{tabname}", "{self.extra_networks_tabname}", event)'>
-        {html.escape(subdir if subdir != "" else "all")}
+        # Generate ALL directory buttons (JavaScript will filter them)
+        dirs_buttons = []
+        for subdir in sorted(all_subdirs.keys(), key=shared.natural_sort_key):
+            # Display name (just the folder name for now, JavaScript will update it)
+            display_name = subdir.rstrip("/")
+            
+            dirs_buttons.append(f"""
+        <button class='lg secondary gradio-button custom-button extra-network-subdir-button' 
+                data-path='{html.escape(subdir, quote=True)}'
+                onclick='extraNetworksNavigateDir("{tabname}", "{self.extra_networks_tabname}", "{html.escape(subdir, quote=True)}", event)'>
+        {html.escape(display_name)}
         </button>
-        """ for subdir in subdirs])
-
-        return subdirs_html
+            """)
+        
+        dirs_html = "".join(dirs_buttons)
+        
+        # Initial breadcrumb (Home) - JavaScript will update it
+        breadcrumb_html = f"""<button class='extra-network-breadcrumb-item extra-network-breadcrumb-active' 
+                                       onclick='extraNetworksNavigateDir("{tabname}", "{self.extra_networks_tabname}", "", event)'>
+                                Home
+                                </button>"""
+        
+        # Combine breadcrumb and directory buttons
+        return f"""
+        <div class='extra-network-breadcrumb' data-current-path=''>{breadcrumb_html}</div>
+        <div class='extra-network-dirs-buttons'>{dirs_html}</div>
+        """
 
     def create_card_view_html(self, tabname: str, *, none_message) -> str:
         """Generates HTML for the network Card View section for a tab.
@@ -662,6 +719,7 @@ class ExtraNetworksPage:
     def find_preview(self, path):
         """
         Find a preview PNG for a given path (without extension) and call link_preview on it.
+        Returns single preview for backwards compatibility.
         """
 
         potential_files = sum([[f"{path}.{ext}", f"{path}.preview.{ext}"] for ext in allowed_preview_extensions()], [])
@@ -671,6 +729,44 @@ class ExtraNetworksPage:
                 return self.link_preview(file)
 
         return None
+    
+    def find_all_previews(self, path):
+        """
+        Find ALL preview images for a given path.
+        Returns a list of preview URLs in order:
+        - loraex.png (main/default, always first if exists)
+        - loraex.preview.1.png
+        - loraex.preview.2.png
+        - ... and so on
+        """
+        preview_urls = []
+        extensions = allowed_preview_extensions()
+        
+        # First, check for main preview (loraex.png) - no .preview. suffix
+        for ext in extensions:
+            main_preview = f"{path}.{ext}"
+            if self.lister.exists(main_preview):
+                preview_urls.append(self.link_preview(main_preview))
+                break  # Only one main preview
+        
+        # Then, check for numbered previews (loraex.preview.1.png, loraex.preview.2.png, etc.)
+        preview_index = 1
+        max_previews = 100  # Safety limit
+        while preview_index < max_previews:
+            found_preview = False
+            for ext in extensions:
+                numbered_preview = f"{path}.preview.{preview_index}.{ext}"
+                if self.lister.exists(numbered_preview):
+                    preview_urls.append(self.link_preview(numbered_preview))
+                    found_preview = True
+                    break  # Found one for this index, move to next
+            
+            if not found_preview:
+                break  # No more previews found
+            
+            preview_index += 1
+        
+        return preview_urls if preview_urls else None
 
     def find_embedded_preview(self, path, name, metadata):
         """

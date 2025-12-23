@@ -28,14 +28,21 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         search_terms = [self.search_terms_from_path(lora_on_disk.filename)]
         if lora_on_disk.hash:
             search_terms.append(lora_on_disk.hash)
+        # Get all preview images (for multiple preview support)
+        all_previews = self.find_all_previews(path)
+        
+        # For backwards compatibility, also get single preview
+        single_preview = self.find_preview(path) or self.find_embedded_preview(path, name, lora_on_disk.metadata)
+        
         item = {
             "name": name,
             "filename": lora_on_disk.filename,
             "shorthash": lora_on_disk.shorthash,
-            "preview": self.find_preview(path) or self.find_embedded_preview(path, name, lora_on_disk.metadata),
+            "preview": all_previews[0] if all_previews else single_preview,
+            "preview_urls": all_previews,
             "description": self.find_description(path),
             "search_terms": search_terms,
-            "local_preview": f"{path}.{shared.opts.samples_format}",
+            "local_preview": f"{path}.jpg",  # Force JPG for smaller file size
             "metadata": lora_on_disk.metadata,
             "sort_keys": {"default": index, **self.get_sort_keys(lora_on_disk.filename)},
         }

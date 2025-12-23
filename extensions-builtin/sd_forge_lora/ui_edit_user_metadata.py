@@ -1,5 +1,6 @@
 import datetime
 import html
+import json
 import random
 import re
 
@@ -55,6 +56,22 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         self.edit_activation_text = None
         self.slider_preferred_weight = None
         self.edit_notes = None
+        
+        # Preview management components
+        self.preview_gallery_html = None
+        self.preview_index_state = None
+        self.preview_counter = None
+        self.button_prev_preview = None
+        self.button_next_preview = None
+        self.button_delete_preview = None
+        self.button_add_preview = None
+        
+        
+        # Reorder grid components
+        self.reorder_grid_html = None
+        self.reorder_new_order_state = None
+        self.button_save_reorder = None
+        self.reorder_status = None
 
     def save_lora_user_metadata(self, name, desc, sd_version, activation_text, preferred_weight, negative_text, notes):
         user_metadata = self.get_user_metadata(name)
@@ -123,7 +140,15 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
 
         tags = build_tags(metadata)
         gradio_tags = [(tag, str(count)) for tag, count in tags[0:24]]
-
+        
+        # Get preview count for initial display
+        preview_count = self.get_preview_count(name)
+        counter_text = f"Preview 1 of {preview_count}" if preview_count > 0 else "No previews"
+        delete_visible = gr.update(visible=(preview_count > 0))
+        
+        # Get reorder grid HTML
+        reorder_grid = self.get_reorder_grid_html(name)
+        
         return [
             *values[0:5],
             item.get("sd_version", "Unknown"),
@@ -133,6 +158,9 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
             user_metadata.get("negative text", ""),
             gr.update(visible=True if tags else False),
             gr.update(value=self.generate_random_prompt_from_tags(tags), visible=True if tags else False),
+            counter_text,
+            delete_visible,
+            reorder_grid,  # NEW: reorder grid HTML
         ]
 
     def generate_random_prompt(self, name):
@@ -157,11 +185,145 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
 
         return ", ".join(sorted(res))
 
+    def get_preview_count(self, name):
+        """Get the number of previews for this LORA"""
+        previews = self.get_all_preview_paths(name)
+        return len(previews)
+    
+    def navigate_preview(self, name, current_index, direction):
+        """
+        Navigate through previews in the modal.
+        Returns: (new_preview_html, new_index, counter_text, delete_button_visible)
+        """
+        previews = self.get_all_preview_paths(name)
+        if not previews:
+            return "<div class='preview-empty'>No previews</div>", 0, "No previews", gr.update(visible=False)
+        
+        # Calculate new index
+        current_index = int(current_index)
+        new_index = current_index + direction
+        
+        # Wrap around
+        if new_index < 0:
+            new_index = len(previews) - 1
+        elif new_index >= len(previews):
+            new_index = 0
+        
+        # Get preview at new index
+        preview_path, _ = previews[new_index]
+        preview_url = self.page.link_preview(preview_path)
+        
+        # Create HTML for single large preview
+        preview_html = f"""
+        <div class='card standalone-card-preview'>
+            <img src="{html.escape(preview_url)}" class="preview">
+        </div>
+        """
+        
+        counter_text = f"Preview {new_index + 1} of {len(previews)}"
+        delete_visible = gr.update(visible=True)  # Always allow deletion
+        
+        return preview_html, new_index, counter_text, delete_visible
+    
+    def update_preview_display(self, name):
+        """
+        Update all preview-related components when opening the editor.
+        Returns: (preview_html, index, counter, delete_visible)
+        """
+        return self.navigate_preview(name, 0, 0)
+
+    def handle_reorder_and_refresh(self, name, new_order_json):
+        """
+        Handle reorder, refresh grid, and update preview display.
+        Returns: (status_html, grid_html, preview_html)
+        """
+        
+        
+        # Perform reorder
+        success_msg, error_msg = self.reorder_previews(name, new_order_json)
+        
+        # Format status message
+        if error_msg:
+            status_html = f"<div class='reorder-status error'>❌ {error_msg}</div>"
+        elif success_msg:
+            status_html = f"<div class='reorder-status success'>✅ {success_msg}</div>"
+        else:
+            status_html = "<div class='reorder-status error'>❌ Unknown error occurred</div>"
+        
+        # Refresh grid HTML
+        grid_html = self.get_reorder_grid_html(name)
+        
+        # Get updated preview HTML (first preview after reorder)
+        preview_html = self.get_card_html(name)
+        
+        return status_html, grid_html, preview_html
+
+    def format_reorder_status(self, success_msg, error_msg):
+        """
+        Format status messages for reorder operations.
+        Returns: HTML string
+        """
+        if error_msg:
+            return f"<div class='reorder-status error'>❌ {error_msg}</div>"
+        elif success_msg:
+            return f"<div class='reorder-status success'>✅ {success_msg}</div>"
+        else:
+            return ""
+
     def create_extra_default_items_in_left_column(self):
         self.select_sd_version = gr.Radio(["SD1", "SDXL", "Flux", "Unknown"], value="Unknown", label="Base model", interactive=True)
 
+    def create_preview_management_buttons(self):
+        """
+        Create buttons for preview management (replaces default buttons).
+        """
+        with gr.Row(elem_classes="preview-navigation-controls"):
+            self.button_prev_preview = gr.Button("‹ Previous", size="sm", scale=1)
+            self.preview_counter = gr.Markdown("Preview 1 of 1", elem_classes="preview-counter")
+            self.button_next_preview = gr.Button("Next ›", size="sm", scale=1)
+        
+        with gr.Row(elem_classes="edit-user-metadata-buttons"):
+            self.button_cancel = gr.Button('Cancel')
+            self.button_add_preview = gr.Button('Add from Generated', variant='primary')
+            self.button_delete_preview = gr.Button('Delete This Preview', variant='stop', visible=False)
+            self.button_save = gr.Button('Save', variant='primary')
+
+        self.html_status = gr.HTML(elem_classes="edit-user-metadata-status")
+        
+        # Hidden state to track current preview index
+        self.preview_index_state = gr.State(value=0)
+
+        self.button_cancel.click(fn=None, _js="closePopup")
+
     def create_editor(self):
         self.create_default_editor_elems()
+        
+        # Add reorder grid (collapsible section)
+        with gr.Accordion("🔄 Reorder Preview Images", open=False) as reorder_accordion:
+            self.reorder_grid_html = gr.HTML(
+                value="<div class='reorder-grid-empty'>Click Edit to load reorder grid</div>",
+                elem_classes="preview-reorder-section"
+            )
+            
+            with gr.Row(elem_classes="reorder-controls"):
+                self.button_save_reorder = gr.Button(
+                    "💾 Save New Order",
+                    variant="primary",
+                    size="lg"
+                )
+            
+            self.reorder_status = gr.HTML(
+                value="",
+                elem_classes="reorder-status"
+            )
+            
+            # Hidden state to store new order from JavaScript
+            self.reorder_new_order_state = gr.Textbox(
+                value="[]",
+                visible=False,
+                elem_id=f"{self.id_part}_reorder_state",
+                elem_classes="reorder-state-input"
+            )
 
         self.taginfo = gr.HighlightedText(label="Training dataset tags")
         self.edit_activation_text = gr.Text(label="Activation text", info="Will be added to prompt along with Lora")
@@ -190,7 +352,8 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
 
         self.taginfo.select(fn=select_tag, inputs=[self.edit_activation_text], outputs=[self.edit_activation_text], show_progress=False)
 
-        self.create_default_buttons()
+        # Use custom preview management buttons instead of default
+        self.create_preview_management_buttons()
 
         viewed_components = [
             self.edit_name,
@@ -205,9 +368,72 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
             self.edit_negative_text,
             row_random_prompt,
             random_prompt,
+            self.preview_counter,
+            self.button_delete_preview,
+            self.reorder_grid_html,  # NEW: reorder grid
         ]
 
-        self.button_edit.click(fn=self.put_values_into_components, inputs=[self.edit_name_input], outputs=viewed_components).then(fn=lambda: gr.update(visible=True), inputs=[], outputs=[self.box])
+        # When edit button clicked, load components AND update preview display
+        self.button_edit.click(
+            fn=self.put_values_into_components, 
+            inputs=[self.edit_name_input], 
+            outputs=viewed_components
+        ).then(
+            fn=self.update_preview_display,
+            inputs=[self.edit_name_input],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview]
+        ).then(
+            fn=lambda: gr.update(visible=True), 
+            inputs=[], 
+            outputs=[self.box]
+        )
+
+        # Previous preview button
+        self.button_prev_preview.click(
+            fn=self.navigate_preview,
+            inputs=[self.edit_name_input, self.preview_index_state, gr.State(-1)],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview],
+            show_progress=False
+        )
+
+        # Next preview button
+        self.button_next_preview.click(
+            fn=self.navigate_preview,
+            inputs=[self.edit_name_input, self.preview_index_state, gr.State(1)],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview],
+            show_progress=False
+        )
+
+        # Delete preview button
+        self.button_delete_preview.click(
+            fn=self.delete_preview_by_index,
+            inputs=[self.edit_name_input, self.preview_index_state],
+            outputs=[self.html_preview, self.html_status],
+            show_progress=False
+        ).then(
+            fn=self.update_preview_display,
+            inputs=[self.edit_name_input],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview]
+        ).then(
+            fn=None,
+            _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}",
+            inputs=[self.edit_name_input],
+            outputs=[]
+        )
+
+        # Save reorder button - single callback with JS
+        self.button_save_reorder.click(
+            fn=self.handle_reorder_and_refresh,
+            _js="function(name, state) { var order = captureAndReturnReorderState(); console.log('JS captured order:', order); return [name, order]; }",
+            inputs=[self.edit_name_input, self.reorder_new_order_state],
+            outputs=[self.reorder_status, self.reorder_grid_html, self.html_preview],
+            show_progress=True
+        ).then(
+            fn=None,
+            _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}",
+            inputs=[self.edit_name_input],
+            outputs=[]
+        )
 
         edited_components = [
             self.edit_description,
@@ -219,3 +445,25 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         ]
 
         self.setup_save_handler(self.button_save, self.save_lora_user_metadata, edited_components)
+
+    def setup_ui(self, gallery):
+        """
+        Override parent setup_ui to add gallery-based preview management.
+        """
+        # Add preview button (replaces the old "Replace preview")
+        self.button_add_preview.click(
+            fn=self.add_preview_from_gallery,
+            _js=f"function(x, y, z){{return [selected_gallery_index_id('{self.tabname + '_gallery_container'}'), y, z]}}",
+            inputs=[self.edit_name_input, gallery, self.edit_name_input],
+            outputs=[self.html_preview, self.html_status],
+            show_progress=False
+        ).then(
+            fn=self.update_preview_display,
+            inputs=[self.edit_name_input],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview]
+        ).then(
+            fn=None,
+            _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}",
+            inputs=[self.edit_name_input],
+            outputs=[]
+        )
