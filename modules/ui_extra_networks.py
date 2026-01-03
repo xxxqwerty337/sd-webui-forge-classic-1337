@@ -169,13 +169,68 @@ def get_single_card(page: str = "", tabname: str = "", name: str = ""):
 
     return JSONResponse({"html": item_html})
 
+def toggle_pin(page: str, tabname: str, name: str):
+    from starlette.responses import JSONResponse
+    
+    # Case-insensitive page lookup
+    page_obj = next(iter([x for x in extra_pages if x.name.lower() == page.lower()]), None)
+    
+    if not page_obj:
+        # Debug: list available pages
+        available_pages = [x.name for x in extra_pages]
+        return JSONResponse({
+            "success": False, 
+            "error": f"Page not found: {page}. Available pages: {available_pages}"
+        })
+    
+    try:
+        # Get current item
+        item = page_obj.items.get(name)
+        if not item:
+            return JSONResponse({"success": False, "error": "Item not found"})
+        
+        # Get user metadata
+        user_metadata = item.get('user_metadata', {})
+        
+        # Toggle pinned state
+        current_pinned = user_metadata.get('pinned', False)
+        new_pinned = not current_pinned
+        user_metadata['pinned'] = new_pinned
+        
+        # Save to file
+        filename = item.get("filename", None)
+        if filename:
+            basename, ext = os.path.splitext(filename)
+            metadata_path = basename + '.json'
+            
+            import json
+            with open(metadata_path, "w", encoding="utf8") as file:
+                json.dump(user_metadata, file, indent=4, ensure_ascii=False)
+            
+            # Update lister cache
+            page_obj.lister.update_file_entry(metadata_path)
+        
+        # Update item in memory
+        item['user_metadata'] = user_metadata
+        item['pinned'] = new_pinned
+        item['sort_keys']['pinned'] = 1 if new_pinned else 0
+        
+        return JSONResponse({
+            "success": True, 
+            "pinned": new_pinned,
+            "name": name
+        })
+        
+    except Exception as e:
+        errors.display(e, f"toggling pin for {name}")
+        return JSONResponse({"success": False, "error": str(e)})
 
 def add_pages_to_demo(app):
     app.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
     app.add_api_route("/sd_extra_networks/cover-images", fetch_cover_images, methods=["GET"])
     app.add_api_route("/sd_extra_networks/metadata", get_metadata, methods=["GET"])
     app.add_api_route("/sd_extra_networks/get-single-card", get_single_card, methods=["GET"])
-
+    app.add_api_route("/sd_extra_networks/toggle-pin", toggle_pin, methods=["GET"])
 
 def quote_js(s):
     s = s.replace('\\', '\\\\')
@@ -359,8 +414,21 @@ class ExtraNetworksPage:
             )
 
         description = (item.get("description", "") or "" if shared.opts.extra_networks_card_show_desc else "")
-        if not shared.opts.extra_networks_card_description_is_html:
+
+        # Check if description contains HTML tags (likely from CivitAI)
+        has_html_tags = bool(description and ('<p>' in description or '<a>' in description or '<br>' in description or '<strong>' in description))
+
+        # Only escape if setting is disabled AND description doesn't look like HTML
+        if not shared.opts.extra_networks_card_description_is_html and not has_html_tags:
             description = html.escape(description)
+
+        # Add pin badge if item is pinned
+        pinned = item.get("pinned", False)
+        pin_badge = ""
+        if pinned:
+            pin_badge = f'''<div class="card-button extra-network-pin-badge" onclick="event.stopPropagation(); togglePin('{tabname}', '{self.extra_networks_tabname}', '{html.escape(item['name'])}', event);" title="Unpin from top">📌</div>'''
+        else:
+            pin_badge = f'''<div class="card-button extra-network-pin-badge unpinned" onclick="event.stopPropagation(); togglePin('{tabname}', '{self.extra_networks_tabname}', '{html.escape(item['name'])}', event);" title="Pin to top">📌</div>'''
 
         # Some items here might not be used depending on HTML template used.
         args = {
@@ -369,6 +437,7 @@ class ExtraNetworksPage:
             "copy_path_button": btn_copy_path,
             "nav_prev_button": btn_nav_prev,
             "nav_next_button": btn_nav_next,
+            "pin_badge": pin_badge,  # ← Make sure this is here
             "description": description,
             "edit_button": btn_edit_item,
             "local_preview": quote_js(item["local_preview"]),
@@ -384,7 +453,7 @@ class ExtraNetworksPage:
             "extra_networks_tabname": self.extra_networks_tabname,
         }
 
-        # ALTERNATIVE: Inject nav buttons directly into copy_path_button
+        # ALTERNATIVE: Inject nav buttons AND pin badge directly into copy_path_button
         # This bypasses the need to modify the HTML template
         if btn_nav_prev and btn_nav_next:
             # Check if template has nav_prev_button placeholders
@@ -863,7 +932,7 @@ def create_ui(interface: gr.Blocks, unrelated_tabs, tabname):
             editor = page.create_user_metadata_editor(ui, tabname)
             editor.create_ui()
             ui.user_metadata_editors.append(editor)
-
+            
             related_tabs.append(tab)
 
     ui.button_save_preview = gr.Button('Save preview', elem_id=f"{tabname}_save_preview", visible=False)
@@ -889,6 +958,80 @@ def create_ui(interface: gr.Blocks, unrelated_tabs, tabname):
 
         button_refresh = gr.Button("Refresh", elem_id=f"{tabname}_{page.extra_networks_tabname}_extra_refresh_internal", visible=False)
         button_refresh.click(fn=refresh, inputs=[], outputs=ui.pages).then(fn=lambda: None, _js="function(){ " + f"applyExtraNetworkFilter('{tabname}_{page.extra_networks_tabname}');" + " }").then(fn=lambda: None, _js='setupAllResizeHandles')
+        # Add batch fetch UI for LoRA pages only
+        if page.extra_networks_tabname == 'lora':
+            with gr.Row(elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_fetch_section", elem_classes=["extra-networks-batch-section"]):
+                with gr.Column(scale=10):
+                    gr.Markdown("### 🌐 Batch Fetch from CivitAI")
+                    gr.Markdown("*Fetch descriptions and preview images for currently **visible/filtered** LoRAs (overwrites existing data)*")
+                with gr.Column(scale=2, min_width=200):
+                    batch_fetch_btn = gr.Button(
+                        "Fetch Visible LoRAs",
+                        variant="primary",
+                        size="lg",
+                        elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_fetch_btn"
+                    )
+            
+            # Hidden inputs to capture current filter state
+            batch_search_state = gr.Textbox(value="", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_search")
+            batch_dir_state = gr.Textbox(value="", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_dir")
+            batch_ui_preset_state = gr.Textbox(value="3", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_preset")
+            
+            batch_status = gr.HTML(elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_status")
+            
+            # JavaScript to capture current filter state before calling Python
+            capture_filters_js = f"""
+            function() {{
+                // Get search text
+                let searchInput = gradioApp().querySelector('#{tabname}_{page.extra_networks_tabname}_extra_search');
+                let searchText = searchInput ? searchInput.value : '';
+                
+                // Get current directory from breadcrumb
+                let breadcrumb = gradioApp().querySelector('#{tabname}_{page.extra_networks_tabname}_dirs .extra-network-breadcrumb');
+                let currentDir = breadcrumb ? breadcrumb.getAttribute('data-current-path') || '' : '';
+                
+                // Get UI preset (SD version filter)
+                let radioUI = gradioApp().querySelector('#forge_ui_preset');
+                let uiPreset = '3'; // Default to 'all'
+                if (radioUI) {{
+                    let radioButtons = radioUI.getElementsByTagName('input');
+                    for (let i = 0; i < radioButtons.length; i++) {{
+                        if (radioButtons[i].checked) {{
+                            uiPreset = i.toString();
+                            break;
+                        }}
+                    }}
+                }}
+                
+                console.log('Batch fetch filters:', {{search: searchText, dir: currentDir, preset: uiPreset}});
+                
+                return [searchText, currentDir, uiPreset];
+            }}
+            """
+            
+            # Hidden state to store updated LoRA names
+            batch_updated_names = gr.Textbox(value="[]", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_updated_names")
+            
+            # Connect button with filter capture
+            batch_fetch_btn.click(
+                fn=lambda search, dir, preset: page.batch_fetch_civitai_metadata(tabname, search, dir, preset),
+                _js=capture_filters_js,
+                inputs=[batch_search_state, batch_dir_state, batch_ui_preset_state],
+                outputs=[batch_status, batch_updated_names],  # Now returns 2 values
+                show_progress=True
+            ).then(
+                # Refresh ONLY the updated cards (preserves filters)
+                fn=lambda: None,
+                _js=f"""
+                function(updated_names_json) {{
+                    console.log('Batch fetch complete, refreshing cards...');
+                    extraNetworksRefreshMultipleCards('{page.name}', '{tabname}', updated_names_json);
+                    return null;
+                }}
+                """,
+                inputs=[batch_updated_names],
+                outputs=[]
+            )
 
     def create_html():
         ui.pages_contents = [pg.create_html(ui.tabname) for pg in ui.stored_extra_pages]

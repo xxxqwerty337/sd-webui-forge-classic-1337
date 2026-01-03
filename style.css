@@ -2281,3 +2281,55 @@ body.resizing .resize-handle {
 .dark .extra-network-breadcrumb-item:hover {
     background: #3a3a3a;
 }
+
+/* ============================================================================
+   PINNED LORA BADGE
+   ============================================================================ */
+
+/* Pin badge - positioned inline before LORA name */
+.extra-network-pin-badge {
+    display: inline-block;
+    background: rgba(255, 215, 0, 0.95);  /* Gold background */
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.extra-network-pin-badge:hover {
+    background: rgba(255, 215, 0, 1);
+    transform: scale(1.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Unpinned state - semi-transparent */
+.extra-network-pin-badge.unpinned {
+    background: rgba(128, 128, 128, 0.6);  /* Gray, semi-transparent */
+    color: #fff;
+}
+
+.extra-network-pin-badge.unpinned:hover {
+    background: rgba(128, 128, 128, 0.9);
+    color: #fff;
+}
+
+/* Active state when clicking */
+.extra-network-pin-badge:active {
+    transform: scale(0.95);
+}
+
+/* Pin badge visibility on hover for unpinned items */
+.card:not(:hover) .extra-network-pin-badge.unpinned {
+    opacity: 0.5;
+}
+
+.card:hover .extra-network-pin-badge.unpinned {
+    opacity: 1;
+}

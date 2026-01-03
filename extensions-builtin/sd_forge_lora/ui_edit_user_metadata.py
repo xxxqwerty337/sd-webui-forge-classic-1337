@@ -73,7 +73,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         self.button_save_reorder = None
         self.reorder_status = None
 
-    def save_lora_user_metadata(self, name, desc, sd_version, activation_text, preferred_weight, negative_text, notes):
+    def save_lora_user_metadata(self, name, desc, sd_version, activation_text, preferred_weight, negative_text, notes, pinned):
         user_metadata = self.get_user_metadata(name)
         user_metadata["description"] = desc
         user_metadata["sd version"] = sd_version
@@ -81,6 +81,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         user_metadata["preferred weight"] = preferred_weight
         user_metadata["negative text"] = negative_text
         user_metadata["notes"] = notes
+        user_metadata["pinned"] = pinned
 
         self.write_user_metadata(name, user_metadata)
 
@@ -152,6 +153,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         return [
             *values[0:5],
             item.get("sd_version", "Unknown"),
+            user_metadata.get("pinned", False),  # NEW: pinned checkbox value
             gr.update(value=gradio_tags, visible=True if tags else False),
             user_metadata.get("activation text", ""),
             float(user_metadata.get("preferred weight", 0.0)),
@@ -272,18 +274,100 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
 
     def create_extra_default_items_in_left_column(self):
         self.select_sd_version = gr.Radio(["SD1", "SDXL", "Flux", "Unknown"], value="Unknown", label="Base model", interactive=True)
+        self.checkbox_pinned = gr.Checkbox(label="📌 Pin to top of folder", value=False, interactive=True)
+
+    def fetch_from_civitai(self, name):
+        """
+        Override parent method to return LoRA-specific outputs.
+        """
+        print(f"[DEBUG LoRA] fetch_from_civitai called with name: {name}")
+        
+        # Call parent method to get base data
+        parent_result = super().fetch_from_civitai(name)
+        
+        # Parent returns (description, notes, status) - 3 values
+        # We need to return (description, sd_version, activation_text, preferred_weight, negative_text, notes, status) - 7 values
+        
+        if len(parent_result) == 3:
+            # Unpack parent results
+            description, notes, status = parent_result
+            
+            # If status indicates error, return error for all fields
+            if "❌" in status or isinstance(description, dict):  # gr.update() is a dict
+                print(f"[DEBUG LoRA] Parent returned error, propagating")
+                return (
+                    description,  # May be gr.update()
+                    gr.update(),  # sd_version unchanged
+                    gr.update(),  # activation_text unchanged
+                    gr.update(),  # preferred_weight unchanged
+                    gr.update(),  # negative_text unchanged
+                    notes,  # May be gr.update()
+                    status
+                )
+            
+            # Success case - extract additional info from notes
+            print(f"[DEBUG LoRA] Parent successful, extracting LoRA-specific data")
+            
+            # Try to extract trained words from notes
+            activation_text = ""
+            sd_version = "Unknown"
+            
+            if "Trained Words:" in notes:
+                import re
+                match = re.search(r'Trained Words: (.+?)(?:\n|$)', notes)
+                if match:
+                    activation_text = match.group(1)
+                    print(f"[DEBUG LoRA] Extracted activation text: {activation_text}")
+            
+            if "Base Model:" in notes:
+                import re
+                match = re.search(r'Base Model: (.+?)(?:\n|$)', notes)
+                if match:
+                    base_model = match.group(1)
+                    # Map to SD version
+                    sd_version_map = {
+                        'SD 1.5': 'SD1', 'SD 1.4': 'SD1', 'SD 1': 'SD1',
+                        'SDXL 1.0': 'SDXL', 'SDXL 0.9': 'SDXL', 'SDXL Turbo': 'SDXL',
+                        'SDXL Lightning': 'SDXL', 'Pony': 'SDXL',
+                        'Flux.1 D': 'Flux', 'Flux.1 S': 'Flux', 'Flux.1': 'Flux',
+                    }
+                    sd_version = sd_version_map.get(base_model, 'Unknown')
+                    print(f"[DEBUG LoRA] Extracted SD version: {sd_version}")
+            
+            return (
+                description,
+                sd_version,
+                activation_text,
+                0.0,  # preferred_weight unchanged
+                "",   # negative_text unchanged
+                notes,
+                status
+            )
+        else:
+            print(f"[DEBUG LoRA] Unexpected parent return format: {len(parent_result)} values")
+            # Fallback - return all unchanged
+            return (
+                gr.update(),
+                gr.update(),
+                gr.update(),
+                gr.update(),
+                gr.update(),
+                gr.update(),
+                "<div style='color: red;'>Unexpected error</div>"
+            )
 
     def create_preview_management_buttons(self):
         """
         Create buttons for preview management (replaces default buttons).
         """
         with gr.Row(elem_classes="preview-navigation-controls"):
-            self.button_prev_preview = gr.Button("‹ Previous", size="sm", scale=1)
+            self.button_prev_preview = gr.Button("◀ Previous", size="sm", scale=1)
             self.preview_counter = gr.Markdown("Preview 1 of 1", elem_classes="preview-counter")
-            self.button_next_preview = gr.Button("Next ›", size="sm", scale=1)
+            self.button_next_preview = gr.Button("Next ►", size="sm", scale=1)
         
         with gr.Row(elem_classes="edit-user-metadata-buttons"):
             self.button_cancel = gr.Button('Cancel')
+            self.button_fetch_civitai = gr.Button('🌐 Fetch from CivitAI', variant='secondary')
             self.button_add_preview = gr.Button('Add from Generated', variant='primary')
             self.button_delete_preview = gr.Button('Delete This Preview', variant='stop', visible=False)
             self.button_save = gr.Button('Save', variant='primary')
@@ -362,6 +446,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
             self.html_preview,
             self.edit_notes,
             self.select_sd_version,
+            self.checkbox_pinned,  # NEW: pinned checkbox
             self.taginfo,
             self.edit_activation_text,
             self.slider_preferred_weight,
@@ -421,6 +506,34 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
             outputs=[]
         )
 
+        # Fetch from CivitAI button
+        print("[DEBUG] Setting up fetch_from_civitai button handler")
+        self.button_fetch_civitai.click(
+            fn=self.fetch_from_civitai,
+            inputs=[self.edit_name_input],
+            outputs=[
+                self.edit_description,
+                self.select_sd_version,
+                self.edit_activation_text,
+                self.slider_preferred_weight,
+                self.edit_negative_text,
+                self.edit_notes,
+                self.html_status
+            ],
+            show_progress=True
+        ).then(
+            # Refresh preview display after downloading images
+            fn=self.update_preview_display,
+            inputs=[self.edit_name_input],
+            outputs=[self.html_preview, self.preview_index_state, self.preview_counter, self.button_delete_preview]
+        ).then(
+            # Refresh card in main view
+            fn=None,
+            _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}",
+            inputs=[self.edit_name_input],
+            outputs=[]
+        )
+
         # Save reorder button - single callback with JS
         self.button_save_reorder.click(
             fn=self.handle_reorder_and_refresh,
@@ -442,6 +555,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
             self.slider_preferred_weight,
             self.edit_negative_text,
             self.edit_notes,
+            self.checkbox_pinned,  # NEW: pinned checkbox
         ]
 
         self.setup_save_handler(self.button_save, self.save_lora_user_metadata, edited_components)

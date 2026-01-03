@@ -145,6 +145,15 @@ function setupExtraNetworksForTab(tabname) {
 
                 let sortedCards = Array.from(cards);
                 sortedCards.sort(function (cardA, cardB) {
+                    // STEP 1: Sort by pinned status first (pinned comes before unpinned)
+                    let pinnedA = parseInt(cardA.dataset.sortPinned) || 0;
+                    let pinnedB = parseInt(cardB.dataset.sortPinned) || 0;
+                    
+                    if (pinnedA !== pinnedB) {
+                        return pinnedB - pinnedA;  // Higher value (1=pinned) comes first
+                    }
+                    
+                    // STEP 2: If both have same pin status, use current sort field
                     let a = cardA.dataset[sortKeyDataField];
                     let b = cardB.dataset[sortKeyDataField];
                     if (!isNaN(a) && !isNaN(b)) {
@@ -893,6 +902,47 @@ function extraNetworksRefreshSingleCard(page, tabname, name) {
     );
 }
 
+
+/**
+ * Refresh multiple cards without losing filter state
+ * @param {string} page - Page name (e.g., "Lora")
+ * @param {string} tabname - Tab name (e.g., "txt2img")
+ * @param {string} namesJson - JSON array of LoRA names to refresh
+ */
+function extraNetworksRefreshMultipleCards(page, tabname, namesJson) {
+    try {
+        const names = JSON.parse(namesJson);
+        
+        if (!names || names.length === 0) {
+            console.log('No cards to refresh');
+            return;
+        }
+        
+        console.log(`Refreshing ${names.length} cards:`, names);
+        
+        // Refresh each card individually
+        let refreshed = 0;
+        names.forEach(function(name) {
+            setTimeout(function() {
+                extraNetworksRefreshSingleCard(page, tabname, name);
+                refreshed++;
+                
+                // Re-apply filters after all cards are refreshed
+                if (refreshed === names.length) {
+                    console.log(`All ${names.length} cards refreshed, re-applying filters...`);
+                    setTimeout(function() {
+                        applyExtraNetworkFilter(tabname + '_' + page.replace(' ', '_'));
+                    }, 500);
+                }
+            }, refreshed * 100); // Stagger requests by 100ms
+        });
+        
+    } catch (e) {
+        console.error('Error refreshing multiple cards:', e);
+    }
+}
+
+
 // ============================================================================
 // MULTIPLE PREVIEW IMAGES NAVIGATION
 // ============================================================================
@@ -1103,6 +1153,79 @@ onUiLoaded(function () {
 });
 
 uiAfterScriptsCallbacks.push(setupExtraNetworks);
+
+/**
+ * Toggle pin status for a LORA card
+ * @param {string} tabname - Tab name (txt2img/img2img)
+ * @param {string} extra_networks_tabname - Extra networks tab name (lora)
+ * @param {string} name - LORA name
+ * @param {Event} event - Click event
+ */
+function togglePin(tabname, extra_networks_tabname, name, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log('Toggling pin for:', name);
+    
+    // Send request to backend
+    const params = new URLSearchParams({
+        page: 'Lora',
+        tabname: tabname,
+        name: name
+    });
+
+    fetch(`/sd_extra_networks/toggle-pin?${params.toString()}`, {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Pin toggled successfully:', data.pinned);
+            
+            // Find the card
+            const card = event.target.closest('.card');
+            if (!card) {
+                console.error('Could not find card element');
+                return;
+            }
+            
+            // Update the data attribute
+            card.setAttribute('data-sort-pinned', data.pinned ? '1' : '0');
+            
+            // Update pin badge appearance
+            const pinBadge = card.querySelector('.extra-network-pin-badge');
+            if (pinBadge) {
+                if (data.pinned) {
+                    pinBadge.classList.remove('unpinned');
+                    pinBadge.title = 'Unpin from top';
+                } else {
+                    pinBadge.classList.add('unpinned');
+                    pinBadge.title = 'Pin to top';
+                }
+            }
+            
+            // Re-sort the cards
+            const tabname_full = tabname + '_' + extra_networks_tabname;
+            if (extraNetworksApplySort[tabname_full]) {
+                extraNetworksApplySort[tabname_full](true);
+            }
+
+            // Also refresh the single card to update the visual state immediately
+            setTimeout(() => {
+                extraNetworksRefreshSingleCard('Lora', tabname, data.name);
+            }, 100);
+            
+        } else {
+            console.error('Failed to toggle pin:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling pin:', error);
+    });
+}
+
+// Make togglePin available globally
+window.togglePin = togglePin;
 
 
 // ============================================================================
