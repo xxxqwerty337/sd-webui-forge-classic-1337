@@ -202,6 +202,14 @@ def flux_to_diffusers(mmdit_config, output_prefix=""):
             "ff_context.net.0.proj.bias": "txt_mlp.0.bias",
             "ff_context.net.2.weight": "txt_mlp.2.weight",
             "ff_context.net.2.bias": "txt_mlp.2.bias",
+            "ff.linear_in.weight": "img_mlp.0.weight",  # LyCoris LoKr
+            "ff.linear_in.bias": "img_mlp.0.bias",
+            "ff.linear_out.weight": "img_mlp.2.weight",
+            "ff.linear_out.bias": "img_mlp.2.bias",
+            "ff_context.linear_in.weight": "txt_mlp.0.weight",
+            "ff_context.linear_in.bias": "txt_mlp.0.bias",
+            "ff_context.linear_out.weight": "txt_mlp.2.weight",
+            "ff_context.linear_out.bias": "txt_mlp.2.bias",
             "attn.norm_q.weight": "img_attn.norm.query_norm.scale",
             "attn.norm_k.weight": "img_attn.norm.key_norm.scale",
             "attn.norm_added_q.weight": "txt_attn.norm.query_norm.scale",
@@ -230,6 +238,8 @@ def flux_to_diffusers(mmdit_config, output_prefix=""):
             "proj_out.bias": "linear2.bias",
             "attn.norm_q.weight": "norm.query_norm.scale",
             "attn.norm_k.weight": "norm.key_norm.scale",
+            "attn.to_qkv_mlp_proj.weight": "linear1.weight",  # Flux 2
+            "attn.to_out.weight": "linear2.weight",  # Flux 2
         }
 
         for k in block_map:
@@ -334,3 +344,57 @@ def z_image_to_diffusers(mmdit_config, output_prefix=""):
         key_map[diffusers] = "{}{}".format(output_prefix, c)
 
     return key_map
+
+
+from modules_forge.packages.huggingface_guess.detection import count_blocks
+
+
+def convert_diffusers_mmdit(state_dict, output_prefix=""):
+    out_sd = {}
+
+    if "noise_refiner.0.attention.norm_k.weight" in state_dict:  # Z-Image
+        n_layers = count_blocks(state_dict, "layers.{}.")
+        dim = state_dict["noise_refiner.0.attention.to_k.weight"].shape[0]
+        sd_map = z_image_to_diffusers({"n_layers": n_layers, "dim": dim}, output_prefix=output_prefix)
+    elif "x_embedder.weight" in state_dict:  # Flux
+        depth = count_blocks(state_dict, "transformer_blocks.{}.")
+        depth_single_blocks = count_blocks(state_dict, "single_transformer_blocks.{}.")
+        hidden_size = state_dict["x_embedder.bias"].shape[0]
+        sd_map = flux_to_diffusers({"depth": depth, "depth_single_blocks": depth_single_blocks, "hidden_size": hidden_size}, output_prefix=output_prefix)
+    else:
+        return None
+
+    for k in sd_map:
+        weight = state_dict.get(k, None)
+        if weight is not None:
+            t = sd_map[k]
+
+            if not isinstance(t, str):
+                if len(t) > 2:
+                    fun = t[2]
+                else:
+                    fun = lambda a: a
+                offset = t[1]
+                if offset is not None:
+                    old_weight = out_sd.get(t[0], None)
+                    if old_weight is None:
+                        old_weight = torch.empty_like(weight)
+                    if old_weight.shape[offset[0]] < offset[1] + offset[2]:
+                        exp = list(weight.shape)
+                        exp[offset[0]] = offset[1] + offset[2]
+                        new = torch.empty(exp, device=weight.device, dtype=weight.dtype)
+                        new[: old_weight.shape[0]] = old_weight
+                        old_weight = new
+
+                    w = old_weight.narrow(offset[0], offset[1], offset[2])
+                else:
+                    old_weight = weight
+                    w = weight
+                w[:] = fun(weight)
+                t = t[0]
+                out_sd[t] = old_weight
+            else:
+                out_sd[t] = weight
+            state_dict.pop(k)
+
+    return out_sd

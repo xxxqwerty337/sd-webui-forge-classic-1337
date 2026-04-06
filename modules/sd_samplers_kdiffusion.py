@@ -14,11 +14,12 @@ from modules.shared import opts
 samplers_k_diffusion = [
     ("DPM++ 2M", "sample_dpmpp_2m", ["k_dpmpp_2m"], {"scheduler": "karras"}),
     ("DPM++ SDE", "sample_dpmpp_sde", ["k_dpmpp_sde"], {"scheduler": "karras", "second_order": True, "brownian_noise": True}),
-    ("DPM++ 2M SDE", "sample_dpmpp_2m_sde", ["k_dpmpp_2m_sde_ka"], {"brownian_noise": True}),
+    ("DPM++ 2M SDE", "sample_dpmpp_2m_sde", ["k_dpmpp_2m_sde"], {"scheduler": "exponential", "brownian_noise": True}),
     ("DPM++ 3M SDE", "sample_dpmpp_3m_sde", ["k_dpmpp_3m_sde"], {"scheduler": "exponential", "discard_next_to_last_sigma": True, "brownian_noise": True}),
     ("Flux Realistic" if opts.forbidden_knowledge else "DPM++ 2s a RF", "sample_dpmpp_2s_ancestral_RF", ["sample_dpmpp_2s_ancestral_RF"], {}),
     ("Euler a", "sample_euler_ancestral", ["k_euler_a", "k_euler_ancestral"], {"uses_ensd": True}),
     ("Euler", "sample_euler", ["k_euler"], {}),
+    ("ER SDE", "sample_er_sde", ["er_side"], {}),
     ("LCM", "sample_lcm", ["k_lcm"], {}),
     ("LMS", "sample_lms", ["k_lms"], {}),
     ("Heun", "sample_heun", ["k_heun"], {"second_order": True}),
@@ -78,7 +79,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         scheduler_name = (p.hr_scheduler if p.is_hr_pass else p.scheduler) or "Automatic"
         if scheduler_name == "Automatic":
-            scheduler_name = self.config.options.get("scheduler", None)
+            from backend.args import dynamic_args
+
+            if dynamic_args.klein:
+                scheduler_name = "Flux2"
+            else:
+                scheduler_name = self.config.options.get("scheduler", None)
 
         scheduler = sd_schedulers.schedulers_map.get(scheduler_name)
 
@@ -114,6 +120,14 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             if scheduler.label == "Beta":
                 p.extra_generation_params["Beta schedule alpha"] = opts.beta_dist_alpha
                 p.extra_generation_params["Beta schedule beta"] = opts.beta_dist_beta
+
+            if scheduler.label == "Flux2":
+                if p.is_hr_pass:
+                    sigmas_kwargs["width"] = p.hr_upscale_to_x
+                    sigmas_kwargs["height"] = p.hr_upscale_to_y
+                else:
+                    sigmas_kwargs["width"] = p.width
+                    sigmas_kwargs["height"] = p.height
 
             sigmas = scheduler.function(n=steps, **sigmas_kwargs, device=devices.cpu)
 
@@ -174,6 +188,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             "s_min_uncond": self.s_min_uncond,
         }
 
+        p.sd_model.forge_objects.unet.model_options["transformer_options"]["sampling_sigmas"] = sigmas
+
         samples = self.launch_sampling(
             t_enc + 1,
             lambda: self.func(self.model_wrap_cfg, xi, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs),
@@ -226,6 +242,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             "cond_scale": p.cfg_scale,
             "s_min_uncond": self.s_min_uncond,
         }
+
+        p.sd_model.forge_objects.unet.model_options["transformer_options"]["sampling_sigmas"] = sigmas
 
         samples = self.launch_sampling(
             steps,

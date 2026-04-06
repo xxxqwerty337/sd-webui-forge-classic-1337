@@ -1,60 +1,60 @@
-import os
+import logging
+import os.path
 
 import gradio as gr
 import torch
 from gradio.context import Context
+from rich import print_json
 
-from backend import memory_management, operations, stream
+from backend import memory_management
 from backend.args import dynamic_args
-from modules import infotext_utils, paths, processing, sd_models, shared, shared_items, ui_common
+from backend.logging import setup_logger
+from modules import (
+    infotext_utils,
+    paths,
+    processing,
+    sd_models,
+    shared,
+    shared_items,
+    ui_common,
+)
+from modules_forge.presets import PresetArch, use_distill, use_shift
 
-total_vram = int(memory_management.total_vram)
+logger = logging.getLogger("ui_models")
+setup_logger(logger)
 
-ui_forge_preset: gr.Radio = None
+ui_forge_preset: gr.Radio
+ui_checkpoint: gr.Dropdown
+ui_vae: gr.Dropdown
+ui_forge_unet_dtype: gr.Radio
 
-ui_checkpoint: gr.Dropdown = None
-ui_vae: gr.Dropdown = None
-ui_clip_skip: gr.Slider = None
-
-ui_forge_unet_storage_dtype_options: gr.Radio = None
-ui_forge_async_loading: gr.Radio = None
-ui_forge_pin_shared_memory: gr.Radio = None
-ui_forge_inference_memory: gr.Slider = None
-
-
-forge_unet_storage_dtype_options = {
+forge_unet_storage_dtype_options: dict[str, tuple[torch.dtype, bool]] = {
     "Automatic": (None, False),
     "Automatic (fp16 LoRA)": (None, True),
     "float8-e4m3fn": (torch.float8_e4m3fn, False),
     "float8-e4m3fn (fp16 LoRA)": (torch.float8_e4m3fn, True),
+    "float8-e5m2": (torch.float8_e5m2, False),
+    "float8-e5m2 (fp16 LoRA)": (torch.float8_e5m2, True),
+    "int8": (torch.int8, False),
+    "int8 (fp16 LoRA)": (torch.int8, True),
 }
 
-bnb_storage_dtype_options = {
-    "bnb-nf4": ("nf4", False),
-    "bnb-nf4 (fp16 LoRA)": ("nf4", True),
-    "bnb-fp4": ("fp4", False),
-    "bnb-fp4 (fp16 LoRA)": ("fp4", True),
-}
-
-if operations.bnb_available:
-    forge_unet_storage_dtype_options.update(bnb_storage_dtype_options)
-
-module_list = {}
+if memory_management.bnb_enabled():
+    forge_unet_storage_dtype_options.update(
+        {
+            "bnb-nf4": ("nf4", False),
+            "bnb-nf4 (fp16 LoRA)": ("nf4", True),
+            "bnb-fp4": ("fp4", False),
+            "bnb-fp4 (fp16 LoRA)": ("fp4", True),
+        }
+    )
 
 
-def bind_to_opts(comp, k, save=False, callback=None):
-    def on_change(v):
-        shared.opts.set(k, v)
-        if save:
-            shared.opts.save(shared.config_filename)
-        if callback is not None:
-            callback()
-
-    comp.change(on_change, inputs=[comp], queue=False, show_progress=False)
+module_list: dict[str, os.PathLike] = {}
 
 
 def make_checkpoint_manager_ui():
-    global ui_checkpoint, ui_vae, ui_clip_skip, ui_forge_unet_storage_dtype_options, ui_forge_async_loading, ui_forge_pin_shared_memory, ui_forge_inference_memory, ui_forge_preset
+    global ui_forge_preset, ui_checkpoint, ui_vae, ui_forge_unet_dtype
 
     if shared.opts.sd_model_checkpoint in [None, "None", "none", ""]:
         if len(sd_models.checkpoints_list) == 0:
@@ -62,47 +62,28 @@ def make_checkpoint_manager_ui():
         if len(sd_models.checkpoints_list) > 0:
             shared.opts.set("sd_model_checkpoint", next(iter(sd_models.checkpoints_list.values())).name)
 
-    ui_forge_preset = gr.Radio(label="UI Preset", value=lambda: shared.opts.forge_preset, choices=("sd", "xl", "flux", "qwen", "lumina", "wan"), elem_id="forge_ui_preset")
+    ui_forge_preset = gr.Dropdown(label="UI Preset", value=lambda: shared.opts.forge_preset, choices=PresetArch.choices(), elem_id="forge_ui_preset")
 
-    ui_checkpoint = gr.Dropdown(label="Checkpoint", value=None, choices=None, elem_classes=["model_selection"])
+    ui_checkpoint = gr.Dropdown(label="Checkpoint", value=None, choices=None, elem_id="setting_sd_model_checkpoint", elem_classes=["model_selection"])
 
-    ui_vae = gr.Dropdown(label="VAE / Text Encoder", value=None, choices=None, multiselect=True)
+    ui_vae = gr.Dropdown(label="VAE / Text Encoder", value=None, choices=None, multiselect=True, elem_id="setting_sd_modules", elem_classes=["model_selection"])
 
-    def gr_refresh_models():
+    def refresh_model_list():
         ckpt_list, vae_list = refresh_models()
-        return gr.update(choices=ckpt_list), gr.update(choices=vae_list)
+        return [gr.update(choices=ckpt_list), gr.update(choices=vae_list)]
 
     refresh_button = ui_common.ToolButton(value=ui_common.refresh_symbol, elem_id="forge_refresh_checkpoint", tooltip="Refresh")
-    refresh_button.click(fn=gr_refresh_models, outputs=[ui_checkpoint, ui_vae], queue=False)
+    refresh_button.click(fn=refresh_model_list, outputs=[ui_checkpoint, ui_vae], queue=False)
+    Context.root_block.load(fn=refresh_model_list, outputs=[ui_checkpoint, ui_vae], queue=False)
 
-    def gr_refresh_on_load():
-        ckpt_list, vae_list = refresh_models()
-        refresh_memory_management_settings()
-        return [gr.update(value=shared.opts.sd_model_checkpoint, choices=ckpt_list), gr.update(value=[os.path.basename(x) for x in shared.opts.forge_additional_modules], choices=vae_list)]
+    ui_forge_unet_dtype = gr.Dropdown(label="Diffusion in Low Bits", value=lambda: shared.opts.forge_unet_storage_dtype, choices=list(forge_unet_storage_dtype_options.keys()), elem_id="forge_ui_dtype")
 
-    Context.root_block.load(fn=gr_refresh_on_load, outputs=[ui_checkpoint, ui_vae], show_progress=False, queue=False)
-
-    ui_forge_unet_storage_dtype_options = gr.Dropdown(label="Diffusion in Low Bits", value=lambda: shared.opts.forge_unet_storage_dtype, choices=list(forge_unet_storage_dtype_options.keys()))
-    bind_to_opts(ui_forge_unet_storage_dtype_options, "forge_unet_storage_dtype", save=True, callback=refresh_model_loading_parameters)
-
-    ui_forge_async_loading = gr.Radio(label="Swap Method", value=lambda: shared.opts.forge_async_loading, choices=["Queue", "Async"])
-    ui_forge_pin_shared_memory = gr.Radio(label="Swap Location", value=lambda: shared.opts.forge_pin_shared_memory, choices=["CPU", "Shared"])
-    ui_forge_inference_memory = gr.Slider(label="GPU Weights (MB)", value=lambda: total_vram - shared.opts.forge_inference_memory, minimum=0, maximum=int(memory_management.total_vram), step=1)
-
-    mem_comps = [ui_forge_inference_memory, ui_forge_async_loading, ui_forge_pin_shared_memory]
-
-    ui_forge_inference_memory.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
-    ui_forge_async_loading.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
-    ui_forge_pin_shared_memory.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
-
-    ui_clip_skip = gr.Slider(label="Clip Skip", value=lambda: shared.opts.CLIP_stop_at_last_layers, minimum=1, maximum=12, step=1)
-    bind_to_opts(ui_clip_skip, "CLIP_stop_at_last_layers", save=True)
-
-    ui_checkpoint.change(checkpoint_change, inputs=[ui_checkpoint, ui_forge_preset], show_progress=False)
-    ui_vae.change(modules_change, inputs=[ui_vae, ui_forge_preset], queue=False, show_progress=False)
+    ui_checkpoint.input(checkpoint_change, inputs=[ui_checkpoint, ui_forge_preset], queue=False, show_progress=False)
+    ui_vae.input(modules_change, inputs=[ui_vae, ui_forge_preset], queue=False, show_progress=False)
+    ui_forge_unet_dtype.input(dtype_change, inputs=[ui_forge_unet_dtype, ui_forge_preset], queue=False, show_progress=False)
 
 
-def find_files_with_extensions(base_path, extensions):
+def find_files_with_extensions(base_path: os.PathLike, extensions: list[str]) -> dict[str, os.PathLike]:
     found_files = {}
     for root, _, files in os.walk(base_path):
         for file in files:
@@ -112,9 +93,7 @@ def find_files_with_extensions(base_path, extensions):
     return found_files
 
 
-def refresh_models():
-    global module_list
-
+def refresh_models() -> tuple[list[os.PathLike], list[os.PathLike]]:
     shared_items.refresh_checkpoints()
     ckpt_list = shared_items.list_checkpoint_tiles(shared.opts.sd_checkpoint_dropdown_use_short)
 
@@ -122,7 +101,7 @@ def refresh_models():
 
     module_list.clear()
 
-    module_paths: set[str] = {
+    module_paths: set[os.PathLike] = {
         os.path.abspath(os.path.join(paths.models_path, "VAE")),
         os.path.abspath(os.path.join(paths.models_path, "text_encoder")),
         *shared.cmd_opts.vae_dirs,
@@ -136,71 +115,42 @@ def refresh_models():
     return sorted(ckpt_list), sorted(module_list.keys())
 
 
-def ui_refresh_memory_management_settings(model_memory, async_loading, pin_shared_memory):
-    """Pass calculated `model_memory` from "GPU Weights" UI slider"""
-    refresh_memory_management_settings(async_loading=async_loading, pin_shared_memory=pin_shared_memory, model_memory=model_memory)  # Use model_memory directly from UI slider value
+def refresh_model_loading_parameters(*, refresh: bool = True):
+    if not refresh:
+        return
 
-
-def refresh_memory_management_settings(async_loading=None, inference_memory=None, pin_shared_memory=None, model_memory=None):
-    # Fallback to defaults if values are not passed
-    async_loading = async_loading if async_loading is not None else shared.opts.forge_async_loading
-    inference_memory = inference_memory if inference_memory is not None else shared.opts.forge_inference_memory
-    pin_shared_memory = pin_shared_memory if pin_shared_memory is not None else shared.opts.forge_pin_shared_memory
-
-    # If model_memory is provided, calculate inference memory accordingly, otherwise use inference_memory directly
-    if model_memory is None:
-        model_memory = total_vram - inference_memory
-    else:
-        inference_memory = total_vram - model_memory
-
-    shared.opts.set("forge_async_loading", async_loading)
-    shared.opts.set("forge_inference_memory", inference_memory)
-    shared.opts.set("forge_pin_shared_memory", pin_shared_memory)
-
-    stream.stream_activated = async_loading == "Async"
-    memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Convert MB to bytes
-    memory_management.PIN_SHARED_MEMORY = pin_shared_memory == "Shared"
-
-    log_dict = dict(stream=stream.should_use_stream(), inference_memory=memory_management.minimum_inference_memory() / (1024 * 1024), pin_shared_memory=memory_management.PIN_SHARED_MEMORY)
-
-    print(f"Environment vars changed: {log_dict}")
-
-    if inference_memory < min(512, total_vram * 0.05):
-        print("------------------")
-        print(f"[Low VRAM Warning] You just set Forge to use 100% GPU memory ({model_memory:.2f} MB) to load model weights.")
-        print("[Low VRAM Warning] This means you will have 0% GPU memory (0.00 MB) to do matrix computation. Computations may fallback to CPU or go Out of Memory.")
-        print("[Low VRAM Warning] In many cases, image generation will be 10x slower.")
-        print("[Low VRAM Warning] To solve the problem, you can set the 'GPU Weights' (on the top of page) to a lower value.")
-        print("[Low VRAM Warning] If you cannot find 'GPU Weights', you can click the 'all' option in the 'UI' area on the left-top corner of the webpage.")
-        print("[Low VRAM Warning] Make sure that you know what you are testing.")
-        print("------------------")
-    else:
-        compute_percentage = (inference_memory / total_vram) * 100.0
-        print(f"[GPU Setting] You will use {(100 - compute_percentage):.2f}% GPU memory ({model_memory:.2f} MB) to load weights, and use {compute_percentage:.2f}% GPU memory ({inference_memory:.2f} MB) to do matrix computation.")
-
-    processing.need_global_unload = True
-
-
-def refresh_model_loading_parameters():
     from modules.sd_models import model_data, select_checkpoint
 
     checkpoint_info = select_checkpoint()
+    if checkpoint_info is None:
+        logger.critical('You do not have any model... Please download models to "models/Stable-diffusion"')
+        return
 
     unet_storage_dtype, lora_fp16 = forge_unet_storage_dtype_options.get(shared.opts.forge_unet_storage_dtype, (None, False))
 
-    dynamic_args["online_lora"] = lora_fp16
-
     model_data.forge_loading_parameters = dict(checkpoint_info=checkpoint_info, additional_modules=shared.opts.forge_additional_modules, unet_storage_dtype=unet_storage_dtype)
 
-    print(f"Model selected: {model_data.forge_loading_parameters}")
-    print(f"Using online LoRAs in FP16: {lora_fp16}")
+    ckpt: str = checkpoint_info.filename
+    modules: list[str] = [os.path.basename(x) for x in shared.opts.forge_additional_modules]
+    dtype = str(unet_storage_dtype or [torch.float16, torch.bfloat16])
+
+    logger.info("Model Selected:")
+    print_json(data=dict(checkpoint=os.path.basename(ckpt), modules=modules, dtype=dtype))
+
+    if ckpt.endswith(("gguf", "GGUF")) and not lora_fp16:
+        logger.warning("GGUF requires fp16 LoRA ; overriding option")
+        lora_fp16 = True
+
+    dynamic_args.online_lora = lora_fp16
+    logger.info(f"Patch LoRAs on-the-fly: {lora_fp16}")
+
     processing.need_global_unload = True
 
 
 def checkpoint_change(ckpt_name: str, preset: str, save=True, refresh=True) -> bool:
     """`ckpt_name` accepts valid aliases; returns `True` if checkpoint changed"""
     new_ckpt_info = sd_models.get_closet_checkpoint_match(ckpt_name)
-    current_ckpt_info = sd_models.get_closet_checkpoint_match(shared.opts.data.get("sd_model_checkpoint", ""))
+    current_ckpt_info = sd_models.get_closet_checkpoint_match(getattr(shared.opts, "sd_model_checkpoint", ""))
     if new_ckpt_info == current_ckpt_info:
         return False
 
@@ -210,8 +160,7 @@ def checkpoint_change(ckpt_name: str, preset: str, save=True, refresh=True) -> b
 
     if save:
         shared.opts.save(shared.config_filename)
-    if refresh:
-        refresh_model_loading_parameters()
+    refresh_model_loading_parameters(refresh=refresh)
     return True
 
 
@@ -219,12 +168,13 @@ def modules_change(module_values: list, preset: str, save=True, refresh=True) ->
     """`module_values` accepts file paths or just the module names; returns `True` if modules changed"""
     modules = []
     for v in module_values:
-        module_name = os.path.basename(v)  # If the input is a filepath, extract the file name
+        module_name = os.path.basename(v)  # If the input is a filepath, extract the filename
         if module_name in module_list:
             modules.append(module_list[module_name])
+    modules.sort()
 
     # skip further processing if value unchanged
-    if sorted(modules) == sorted(shared.opts.data.get("forge_additional_modules", [])):
+    if modules == getattr(shared.opts, "forge_additional_modules", []):
         return False
 
     shared.opts.set("forge_additional_modules", modules)
@@ -233,12 +183,22 @@ def modules_change(module_values: list, preset: str, save=True, refresh=True) ->
 
     if save:
         shared.opts.save(shared.config_filename)
-    if refresh:
-        refresh_model_loading_parameters()
+    refresh_model_loading_parameters(refresh=refresh)
     return True
 
 
-def get_a1111_ui_component(tab, label):
+def dtype_change(dtype: str, preset: str, save=True, refresh=True) -> bool:
+    shared.opts.set("forge_unet_storage_dtype", dtype)
+    if preset is not None:
+        shared.opts.set(f"forge_unet_storage_dtype_{preset}", dtype)
+
+    if save:
+        shared.opts.save(shared.config_filename)
+    refresh_model_loading_parameters(refresh=refresh)
+    return True
+
+
+def get_a1111_ui_component(tab: str, label: str) -> gr.components.Component:
     fields = infotext_utils.paste_fields[tab]["fields"]
     for f in fields:
         if f.label == label or f.api == label:
@@ -246,22 +206,27 @@ def get_a1111_ui_component(tab, label):
 
 
 def forge_main_entry():
-    ui_txt2img_width = get_a1111_ui_component("txt2img", "Size-1")
-    ui_txt2img_height = get_a1111_ui_component("txt2img", "Size-2")
-    ui_txt2img_cfg = get_a1111_ui_component("txt2img", "CFG scale")
-    ui_txt2img_distilled_cfg = get_a1111_ui_component("txt2img", "Distilled CFG Scale")
-    ui_txt2img_sampler = get_a1111_ui_component("txt2img", "sampler_name")
-    ui_txt2img_scheduler = get_a1111_ui_component("txt2img", "scheduler")
+    ui_txt2img_steps = get_a1111_ui_component("txt2img", "Steps")
+    ui_txt2img_hr_steps = get_a1111_ui_component("txt2img", "Hires steps")
+    ui_img2img_steps = get_a1111_ui_component("img2img", "Steps")
 
-    ui_img2img_width = get_a1111_ui_component("img2img", "Size-1")
-    ui_img2img_height = get_a1111_ui_component("img2img", "Size-2")
-    ui_img2img_cfg = get_a1111_ui_component("img2img", "CFG scale")
-    ui_img2img_distilled_cfg = get_a1111_ui_component("img2img", "Distilled CFG Scale")
+    ui_txt2img_sampler = get_a1111_ui_component("txt2img", "sampler_name")
     ui_img2img_sampler = get_a1111_ui_component("img2img", "sampler_name")
+    ui_txt2img_scheduler = get_a1111_ui_component("txt2img", "scheduler")
     ui_img2img_scheduler = get_a1111_ui_component("img2img", "scheduler")
 
+    ui_txt2img_width = get_a1111_ui_component("txt2img", "Size-1")
+    ui_img2img_width = get_a1111_ui_component("img2img", "Size-1")
+    ui_txt2img_height = get_a1111_ui_component("txt2img", "Size-2")
+    ui_img2img_height = get_a1111_ui_component("img2img", "Size-2")
+
+    ui_txt2img_cfg = get_a1111_ui_component("txt2img", "CFG scale")
     ui_txt2img_hr_cfg = get_a1111_ui_component("txt2img", "Hires CFG Scale")
+    ui_img2img_cfg = get_a1111_ui_component("img2img", "CFG scale")
+
+    ui_txt2img_distilled_cfg = get_a1111_ui_component("txt2img", "Distilled CFG Scale")
     ui_txt2img_hr_distilled_cfg = get_a1111_ui_component("txt2img", "Hires Distilled CFG Scale")
+    ui_img2img_distilled_cfg = get_a1111_ui_component("img2img", "Distilled CFG Scale")
 
     ui_txt2img_batch_size = get_a1111_ui_component("txt2img", "Batch size")
     ui_img2img_batch_size = get_a1111_ui_component("img2img", "Batch size")
@@ -269,33 +234,43 @@ def forge_main_entry():
     output_targets = [
         ui_checkpoint,
         ui_vae,
-        ui_clip_skip,
-        ui_forge_unet_storage_dtype_options,
-        ui_forge_async_loading,
-        ui_forge_pin_shared_memory,
-        ui_forge_inference_memory,
+        ui_forge_unet_dtype,
+        ui_txt2img_steps,
+        ui_txt2img_hr_steps,
+        ui_img2img_steps,
+        ui_txt2img_sampler,
+        ui_img2img_sampler,
+        ui_txt2img_scheduler,
+        ui_img2img_scheduler,
         ui_txt2img_width,
         ui_img2img_width,
         ui_txt2img_height,
         ui_img2img_height,
         ui_txt2img_cfg,
+        ui_txt2img_hr_cfg,
         ui_img2img_cfg,
         ui_txt2img_distilled_cfg,
-        ui_img2img_distilled_cfg,
-        ui_txt2img_sampler,
-        ui_img2img_sampler,
-        ui_txt2img_scheduler,
-        ui_img2img_scheduler,
-        ui_txt2img_hr_cfg,
         ui_txt2img_hr_distilled_cfg,
+        ui_img2img_distilled_cfg,
         ui_txt2img_batch_size,
         ui_img2img_batch_size,
     ]
 
-    ui_forge_preset.change(on_preset_change, inputs=[ui_forge_preset], outputs=output_targets, queue=False, show_progress=False).then(js="clickLoraRefresh", fn=None, queue=False, show_progress=False)
+    ui_forge_preset.change(on_preset_change, inputs=[ui_forge_preset], outputs=output_targets, queue=False, show_progress=False).success(
+        fn=_load_presets,
+        inputs=[ui_checkpoint, ui_vae, ui_forge_unet_dtype, ui_forge_preset],
+        queue=False,
+        show_progress=False,
+    ).then(js="clickLoraRefresh", fn=None, queue=False, show_progress=False)
     Context.root_block.load(on_preset_change, inputs=[ui_forge_preset], outputs=output_targets, queue=False, show_progress=False)
 
     refresh_model_loading_parameters()
+
+
+def _load_presets(ui_checkpoint: str, ui_vae: list[str], ui_forge_unet_dtype: str, ui_forge_preset: str):
+    dtype_change(ui_forge_unet_dtype, ui_forge_preset, save=False, refresh=False)
+    modules_change(ui_vae, ui_forge_preset, save=False, refresh=False)
+    checkpoint_change(ui_checkpoint, ui_forge_preset, save=True, refresh=True)
 
 
 def on_preset_change(preset: str):
@@ -303,41 +278,43 @@ def on_preset_change(preset: str):
     shared.opts.set("forge_preset", preset)
     shared.opts.save(shared.config_filename)
 
-    model_mem = getattr(shared.opts, f"{preset}_gpu_mb", total_vram - 1024)
-    if model_mem < 0 or model_mem > total_vram:
-        model_mem = total_vram - 1024
+    if use_shift(preset):
+        d_args = {"visible": True, "label": "Shift"}
+    elif use_distill(preset):
+        d_args = {"visible": True, "label": "Distilled CFG Scale"}
+    else:
+        d_args = {"visible": False}
 
-    show_clip_skip = preset not in ("qwen", "lumina", "wan")
-    show_basic_mem = preset != "sd"
-    show_adv_mem = preset in ("flux", "qwen", "wan")
-    distilled = preset in ("flux", "lumina", "wan")
-    d_label = "Distilled CFG Scale" if preset == "flux" else "Shift"
-    batch_args = {"minimum": 1, "maximum": 97, "step": 16, "label": "Frames", "value": 1} if preset == "wan" else {"minimum": 1, "maximum": 8, "step": 1, "label": "Batch size", "value": 1}
-
-    additional_modules = [os.path.basename(x) for x in getattr(shared.opts, f"forge_additional_modules_{preset}", [])]
+    batch_args = {"minimum": 1, "maximum": 241, "step": 16, "label": "Frames", "value": 1} if preset == "wan" else {"minimum": 1, "maximum": 8, "step": 1, "label": "Batch Size", "value": 1}
 
     return [
-        gr.update(value=getattr(shared.opts, f"forge_checkpoint_{preset}", shared.opts.sd_model_checkpoint)),  # ui_checkpoint
-        gr.update(value=additional_modules),  # ui_vae
-        gr.update(visible=show_clip_skip, value=getattr(shared.opts, "CLIP_stop_at_last_layers", 2)),  # ui_clip_skip
-        gr.update(visible=show_basic_mem, value=getattr(shared.opts, "forge_unet_storage_dtype", "Automatic")),  # ui_forge_unet_storage_dtype_options
-        gr.update(visible=show_adv_mem, value=getattr(shared.opts, "forge_async_loading", "Queue")),  # ui_forge_async_loading
-        gr.update(visible=show_adv_mem, value=getattr(shared.opts, "forge_pin_shared_memory", "CPU")),  # ui_forge_pin_shared_memory
-        gr.update(visible=show_basic_mem, value=model_mem),  # ui_forge_inference_memory
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_width", 768)),  # ui_txt2img_width
-        gr.update(value=getattr(shared.opts, f"{preset}_i2i_width", 768)),  # ui_img2img_width
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_height", 768)),  # ui_txt2img_height
-        gr.update(value=getattr(shared.opts, f"{preset}_i2i_height", 768)),  # ui_img2img_height
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_cfg", 1.0)),  # ui_txt2img_cfg
-        gr.update(value=getattr(shared.opts, f"{preset}_i2i_cfg", 1.0)),  # ui_img2img_cfg
-        gr.update(visible=distilled, label=d_label, value=getattr(shared.opts, f"{preset}_t2i_d_cfg", 3.0)),  # ui_txt2img_distilled_cfg
-        gr.update(visible=distilled, label=d_label, value=getattr(shared.opts, f"{preset}_i2i_d_cfg", 3.0)),  # ui_img2img_distilled_cfg
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_sampler", "Euler")),  # ui_txt2img_sampler
-        gr.update(value=getattr(shared.opts, f"{preset}_i2i_sampler", "Euler")),  # ui_img2img_sampler
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_scheduler", "Simple")),  # ui_txt2img_scheduler
-        gr.update(value=getattr(shared.opts, f"{preset}_i2i_scheduler", "Simple")),  # ui_img2img_scheduler
-        gr.update(value=getattr(shared.opts, f"{preset}_t2i_hr_cfg", 1.0)),  # ui_txt2img_hr_cfg
-        gr.update(visible=distilled, label=d_label, value=getattr(shared.opts, f"{preset}_t2i_hr_d_cfg", 3.0)),  # ui_txt2img_hr_distilled_cfg
-        gr.update(**batch_args),  # ui_txt2img_batch_size
-        gr.update(**batch_args),  # ui_img2img_batch_size
+        # ui_checkpoint, ui_vae, ui_forge_unet_dtype
+        gr.update(value=getattr(shared.opts, f"forge_checkpoint_{preset}", shared.opts.sd_model_checkpoint)),
+        gr.update(value=[os.path.basename(m) for m in getattr(shared.opts, f"forge_additional_modules_{preset}", [])]),
+        gr.update(value=getattr(shared.opts, f"forge_unet_storage_dtype_{preset}", "Automatic")),
+        # ui_txt2img_steps, ui_txt2img_hr_steps, ui_img2img_steps
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_step", 20)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_hr_step", 20)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_i2i_step", 20)) > 0 else gr.skip(),
+        # ui_txt2img_sampler, ui_img2img_sampler, ui_txt2img_scheduler, ui_img2img_scheduler
+        gr.update(value=getattr(shared.opts, f"{preset}_t2i_sampler", "Euler")),
+        gr.update(value=getattr(shared.opts, f"{preset}_i2i_sampler", "Euler")),
+        gr.update(value=getattr(shared.opts, f"{preset}_t2i_scheduler", "Simple")),
+        gr.update(value=getattr(shared.opts, f"{preset}_i2i_scheduler", "Simple")),
+        # ui_txt2img_width, ui_img2img_width, ui_txt2img_height, ui_img2img_height
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_width", 1024)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_i2i_width", 1024)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_height", 1024)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_i2i_height", 1024)) > 0 else gr.skip(),
+        # ui_txt2img_cfg, ui_txt2img_hr_cfg, ui_img2img_cfg
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_cfg", 1.0)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_t2i_hr_cfg", 1.0)) > 0 else gr.skip(),
+        gr.update(value=v) if (v := getattr(shared.opts, f"{preset}_i2i_cfg", 1.0)) > 0 else gr.skip(),
+        # ui_txt2img_distilled_cfg, ui_img2img_distilled_cfg, ui_txt2img_hr_distilled_cfg
+        gr.update(value=getattr(shared.opts, f"{preset}_t2i_dcfg", 3.0), **d_args),
+        gr.update(value=getattr(shared.opts, f"{preset}_t2i_hr_dcfg", 3.0), **d_args),
+        gr.update(value=getattr(shared.opts, f"{preset}_i2i_dcfg", 3.0), **d_args),
+        # ui_txt2img_batch_size, ui_img2img_batch_size
+        gr.update(**batch_args),
+        gr.update(**batch_args),
     ]

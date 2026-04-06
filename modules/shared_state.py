@@ -2,13 +2,14 @@ import datetime
 import logging
 import threading
 import time
-import traceback
-import torch
 from contextlib import nullcontext
-
-from modules import errors, shared, devices
-from backend.args import args
 from typing import Optional
+
+import torch
+from PIL import Image
+
+from backend import stream
+from modules import devices, errors, shared
 
 log = logging.getLogger(__name__)
 
@@ -21,9 +22,10 @@ class State:
     job_no = 0
     job_count = 0
     processing_has_refined_job_count = False
-    job_timestamp = '0'
-    sampling_step = 0
-    sampling_steps = 0
+    job_timestamp = "0"
+    preview_step: int = 0
+    sampling_step: int = 0
+    sampling_steps: int = 0
     current_latent = None
     current_image = None
     current_image_sampling_step = 0
@@ -36,8 +38,8 @@ class State:
 
     def __init__(self):
         self.server_start = time.time()
-        if args.cuda_stream:
-            self.vae_stream = torch.cuda.Stream()
+        if stream.should_use_stream():
+            self.vae_stream = stream.get_vae_stream()
         else:
             self.vae_stream = None
 
@@ -98,6 +100,7 @@ class State:
 
         self.job_no += 1
         self.sampling_step = 0
+        self.preview_step = 0
         self.current_image_sampling_step = 0
 
     def dict(self):
@@ -117,13 +120,14 @@ class State:
 
     def begin(self, job: str = "(unknown)"):
         self.sampling_step = 0
+        self.preview_step = 0
         self.time_start = time.time()
         self.job_count = -1
         self.processing_has_refined_job_count = False
         self.job_no = 0
         self.job_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        self.current_latent = None
-        self.current_image = None
+        self.current_latent: torch.Tensor = None
+        self.current_image: Image.Image = None
         self.current_image_sampling_step = 0
         self.id_live_preview = 0
         self.skipped = False
@@ -144,11 +148,11 @@ class State:
 
     @torch.inference_mode()
     def set_current_image(self):
-        """if enough sampling steps have been made after the last call to this, sets self.current_image from self.current_latent, and modifies self.id_live_preview accordingly"""
-        if not shared.parallel_processing_allowed:
+        if not shared.opts.live_previews_enable or shared.opts.show_progress_every_n_steps == -1:
             return
-
-        if self.sampling_step - self.current_image_sampling_step >= shared.opts.show_progress_every_n_steps and shared.opts.live_previews_enable and shared.opts.show_progress_every_n_steps != -1:
+        if self.preview_step >= self.sampling_steps:
+            return
+        if self.preview_step - self.current_image_sampling_step >= shared.opts.show_progress_every_n_steps:
             self.do_set_current_image()
 
     @torch.inference_mode()
@@ -159,31 +163,29 @@ class State:
         import modules.sd_samplers
 
         try:
+            _video: bool = self.current_latent.ndim == 5 and self.current_latent.size(2) > 1
+
+            vae_context = nullcontext()
             if self.vae_stream is not None:
-                # not waiting on default stream will result in corrupt results
-                # will not block main stream under any circumstances
-                self.vae_stream.wait_stream(torch.cuda.default_stream())
-                vae_context = torch.cuda.stream(self.vae_stream)
-            else:
-                vae_context = nullcontext()
+                self.vae_stream.wait_stream(stream.current_stream)
+                vae_context = stream.stream_context()(self.vae_stream)
+
             with vae_context:
-                if shared.opts.show_progress_grid:
+                if _video:
+                    self.assign_current_image(modules.sd_samplers.sample_to_video(self.current_latent))
+                elif shared.opts.show_progress_grid:
                     self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
                 else:
                     self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
 
             self.current_image_sampling_step = self.sampling_step
 
-        except Exception as e:
-            # traceback.print_exc()
-            # print(e)
-            # when switching models during genration, VAE would be on CPU, so creating an image will fail.
-            # we silently ignore this error
+        except Exception:
             errors.record_exception()
 
     @torch.inference_mode()
-    def assign_current_image(self, image):
-        if shared.opts.live_previews_image_format == 'jpeg' and image.mode in ('RGBA', 'P'):
-            image = image.convert('RGB')
+    def assign_current_image(self, image: Image.Image):
+        if shared.opts.live_previews_image_format == "jpeg" and not getattr(image, "is_animated", False) and image.mode != "RGB":
+            image = image.convert("RGB")
         self.current_image = image
         self.id_live_preview += 1

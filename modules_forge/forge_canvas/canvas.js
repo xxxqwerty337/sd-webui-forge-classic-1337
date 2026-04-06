@@ -288,6 +288,7 @@ class ForgeCanvas {
             self.drawing = false;
             drawingCanvas.style.cursor = "";
             scribbleIndicator.style.display = "none";
+            self.saveState();
         });
 
         container.addEventListener("pointerdown", (e) => {
@@ -517,14 +518,6 @@ class ForgeCanvas {
         ctx.lineJoin = "round";
         ctx.lineWidth = this.scribbleWidth / (this.scribbleWidthConsistent ? this.imgScale : 1.0) * 4;
 
-        if (this.contrast_scribbles) {
-            ctx.strokeStyle = this.contrast_pattern;
-            ctx.stroke();
-            return;
-        }
-
-        ctx.strokeStyle = this.scribbleColor;
-
         if (this.scribbleAlpha <= 0) {
             ctx.globalCompositeOperation = "destination-out";
             ctx.globalAlpha = 1.0;
@@ -533,6 +526,14 @@ class ForgeCanvas {
         }
 
         ctx.globalCompositeOperation = "source-over";
+
+        if (this.contrast_scribbles) {
+            ctx.strokeStyle = this.contrast_pattern;
+            ctx.stroke();
+            return;
+        }
+
+        ctx.strokeStyle = this.scribbleColor;
 
         canvas.style.opacity = 1.0;
         let drawingAlpha = this.scribbleAlpha;
@@ -543,6 +544,13 @@ class ForgeCanvas {
         }
 
         if (this.scribbleSoftness <= 0) {
+            ctx.save();
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.globalAlpha = 1.0;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.globalCompositeOperation = "source-over";
             ctx.globalAlpha = drawingAlpha / 100.0;
             ctx.stroke();
             return;

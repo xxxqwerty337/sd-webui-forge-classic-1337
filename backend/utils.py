@@ -1,38 +1,68 @@
 import json
-import os
+import math
+import os.path
 
-import gguf
 import safetensors
 import torch
 from einops import rearrange, repeat
 
-import backend.misc.checkpoint_pickle
 from backend.args import args
+from backend.memory_management import logger
 from backend.operations_gguf import ParameterGGUF
+from modules_forge.packages import gguf
+
+if not hasattr(torch.serialization, "add_safe_globals"):
+    logger.critical("Update your PyTorch...")
+    raise SystemExit
+
+
+class ModelCheckpoint:
+    pass
+
+
+ModelCheckpoint.__module__ = "pytorch_lightning.callbacks.model_checkpoint"
+
+
+def scalar(*args, **kwargs):
+    from numpy.core.multiarray import scalar as sc
+
+    return sc(*args, **kwargs)
+
+
+scalar.__module__ = "numpy.core.multiarray"
+
+from _codecs import encode
+
+from numpy import dtype
+from numpy.dtypes import Float64DType
+
+torch.serialization.add_safe_globals([ModelCheckpoint, scalar, dtype, Float64DType, encode])
+logger.debug("Models will always be loaded safely")
+
 
 MMAP_TORCH_FILES = args.mmap_torch_files
 DISABLE_MMAP = args.disable_mmap
 
 
-def read_arbitrary_config(directory):
+def read_arbitrary_config(directory: os.PathLike) -> dict:
     config_path = os.path.join(directory, "config.json")
 
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"No config.json file found in the directory: {directory}")
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(f'No config.json file found in "{directory}"')
 
-    with open(config_path, "rt", encoding="utf-8") as file:
+    with open(config_path, "r", encoding="utf-8") as file:
         config_data = json.load(file)
 
     return config_data
 
 
-def load_torch_file(ckpt: str, safe_load=False, device=None, *, return_metadata=False):
-    """https://github.com/comfyanonymous/ComfyUI/blob/v0.3.64/comfy/utils.py#L53"""
-    if device is None:
-        device = torch.device("cpu")
+def load_torch_file(ckpt: str, *, safe_load=True, device=None, return_metadata=False) -> dict[str, torch.Tensor]:
+    """https://github.com/Comfy-Org/ComfyUI/blob/v0.10.0/comfy/utils.py#L59"""
 
+    device = device or torch.device("cpu")
     metadata = None
-    if ckpt.lower().endswith(".safetensors") or ckpt.lower().endswith(".sft"):
+
+    if ckpt.lower().endswith((".safetensors", ".sft")):
         try:
             with safetensors.safe_open(ckpt, framework="pt", device=device.type) as f:
                 sd = {}
@@ -43,11 +73,8 @@ def load_torch_file(ckpt: str, safe_load=False, device=None, *, return_metadata=
                     sd[k] = tensor
                 if return_metadata:
                     metadata = f.metadata()
-        except Exception as e:
-            if len(e.args) > 0:
-                if "HeaderTooLarge" in e.args[0] or "MetadataIncompleteBuffer" in e.args[0]:
-                    raise ValueError('\nModel: "{}" is corrupt or invalid...'.format(ckpt))
-            raise e
+        except Exception:
+            raise ValueError(f'\nModel "{ckpt}" is corrupt or invalid...\nPlease download the model again\n') from None
 
     elif ckpt.lower().endswith(".gguf"):
         reader = gguf.GGUFReader(ckpt)
@@ -56,14 +83,10 @@ def load_torch_file(ckpt: str, safe_load=False, device=None, *, return_metadata=
             sd[str(tensor.name)] = ParameterGGUF(tensor)
 
     else:
-        torch_args = {}
-
-        if not safe_load:
-            torch_args["pickle_module"] = backend.misc.checkpoint_pickle
-        else:
-            torch_args["weights_only"] = True
-            if MMAP_TORCH_FILES:
-                torch_args["mmap"] = True
+        assert safe_load
+        torch_args = {"weights_only": True}
+        if MMAP_TORCH_FILES:
+            torch_args["mmap"] = True
 
         pl_sd = torch.load(ckpt, map_location=device, **torch_args)
 
@@ -82,10 +105,7 @@ def load_torch_file(ckpt: str, safe_load=False, device=None, *, return_metadata=
 
 
 def set_attr(obj, attr, value):
-    attrs = attr.split(".")
-    for name in attrs[:-1]:
-        obj = getattr(obj, name)
-    setattr(obj, attrs[-1], torch.nn.Parameter(value, requires_grad=False))
+    set_attr_raw(obj, attr, torch.nn.Parameter(value, requires_grad=False))
 
 
 def set_attr_raw(obj, attr, value):
@@ -120,12 +140,34 @@ def get_attr_with_parent(obj, attr):
     return parent, name, obj
 
 
-def calculate_parameters(sd, prefix=""):
+def calculate_parameters(sd: dict[str, torch.Tensor], prefix: str = "") -> int:
     params = 0
     for k in sd.keys():
         if k.startswith(prefix):
             params += sd[k].nelement()
     return params
+
+
+def weight_dtype(sd: dict[str, torch.Tensor], prefix: str = "") -> torch.dtype | str:
+    for k, v in sd.items():
+        if hasattr(v, "gguf_cls"):
+            return "gguf"
+        if "bitsandbytes__nf4" in k:
+            return "nf4"
+        if "bitsandbytes__fp4" in k:
+            return "fp4"
+
+    dtypes: dict[torch.dtype, int] = {}
+    for k in sd.keys():
+        if k.startswith(prefix):
+            w = sd[k]
+            dtypes[w.dtype] = dtypes.get(w.dtype, 0) + w.numel()
+
+    if len(dtypes) == 0:
+        return None
+
+    dtypes = {_d: dtypes[_d] for _d in dtypes if _d.is_floating_point}
+    return max(dtypes, key=dtypes.get)
 
 
 def tensor2parameter(x):
@@ -207,6 +249,27 @@ def beautiful_print_gguf_state_dict_statics(state_dict):
     return
 
 
+def resize_to_batch_size(tensor, batch_size):
+    in_batch_size = tensor.shape[0]
+    if in_batch_size == batch_size:
+        return tensor
+
+    if batch_size <= 1:
+        return tensor[:batch_size]
+
+    output = torch.empty([batch_size] + list(tensor.shape)[1:], dtype=tensor.dtype, device=tensor.device)
+    if batch_size < in_batch_size:
+        scale = (in_batch_size - 1) / (batch_size - 1)
+        for i in range(batch_size):
+            output[i] = tensor[min(round(i * scale), in_batch_size - 1)]
+    else:
+        scale = in_batch_size / batch_size
+        for i in range(batch_size):
+            output[i] = tensor[min(math.floor((i + 0.5) * scale), in_batch_size - 1)]
+
+    return output
+
+
 def pad_to_patch_size(img, patch_size=(2, 2), padding_mode="circular"):
     """https://github.com/comfyanonymous/ComfyUI/blob/v0.3.64/comfy/ldm/common_dit.py#L5"""
     if padding_mode == "circular" and (torch.jit.is_tracing() or torch.jit.is_scripting()):
@@ -254,3 +317,10 @@ def join_dicts(base_dict: dict | None, update_dict: dict | None) -> dict:
             result[key] = value
 
     return result
+
+
+def hash_tensor(x: torch.Tensor) -> int:
+    if hasattr(torch, "hash_tensor"):
+        return torch.hash_tensor(x.cpu()).item()
+    else:
+        return hash(tuple(x.reshape(-1).tolist()))

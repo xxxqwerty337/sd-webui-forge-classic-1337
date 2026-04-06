@@ -1,6 +1,5 @@
 import torch
 from huggingface_guess import model_list
-from huggingface_guess.utils import resize_to_batch_size
 
 from backend import args, memory_management
 from backend.diffusion_engine.base import ForgeDiffusionEngine, ForgeObjects
@@ -9,6 +8,7 @@ from backend.patcher.clip import CLIP
 from backend.patcher.unet import UnetPatcher
 from backend.patcher.vae import VAE
 from backend.text_processing.umt5_engine import UMT5TextProcessingEngine
+from backend.utils import resize_to_batch_size
 
 # get_learned_conditioning is not called in the Refiner pass;
 # so we store the desired shift value for the low_noise model
@@ -20,7 +20,6 @@ class Wan(ForgeDiffusionEngine):
 
     def __init__(self, estimated_config, huggingface_components):
         super().__init__(estimated_config, huggingface_components)
-        self.is_inpaint = False
 
         clip = CLIP(model_dict={"umt5xxl": huggingface_components["text_encoder"]}, tokenizer_dict={"umt5xxl": huggingface_components["tokenizer"]})
 
@@ -46,6 +45,7 @@ class Wan(ForgeDiffusionEngine):
         global refiner_shift
         if refiner_shift is not None:
             self.forge_objects.unet.model.predictor.set_parameters(shift=refiner_shift)
+            memory_management.logger.debug(f"Shift: {refiner_shift}")
             refiner_shift = None
 
     @torch.inference_mode()
@@ -54,6 +54,7 @@ class Wan(ForgeDiffusionEngine):
         global refiner_shift
         shift = getattr(prompt, "distilled_cfg_scale", 8.0)
         self.forge_objects.unet.model.predictor.set_parameters(shift=shift)
+        memory_management.logger.debug(f"Shift: {shift}")
         refiner_shift = shift
         return self.text_processing_engine_t5(prompt)
 
@@ -100,17 +101,17 @@ class Wan(ForgeDiffusionEngine):
         else:
             z = torch.cat((mask, image), dim=1)
 
-        args.dynamic_args["concat_latent"] = z
+        args.dynamic_args.concat_latent = z
 
     @torch.inference_mode()
-    def encode_first_stage(self, x):
-        length, c, h, w = x.shape
-        assert c == 3
-        if length > 1:
+    def encode_first_stage(self, x: torch.Tensor):
+        b, c, h, w = x.shape
+        if x.size(0) > 1:
             x = x[0].unsqueeze(0)  # enforce batch_size of 1
+
         start_image = x.movedim(1, -1) * 0.5 + 0.5
-        latent = torch.zeros([1, 16, ((length - 1) // 4) + 1, h // 8, w // 8], device=self.forge_objects.vae.device)
-        self.image_to_video(length, start_image, latent)
+        latent = torch.zeros([1, 16, ((b - 1) // 4) + 1, h // 8, w // 8], device=self.forge_objects.vae.device)
+        self.image_to_video(b, start_image, latent)
         sample = self.forge_objects.vae.first_stage_model.process_in(latent)
         return sample.to(x)
 

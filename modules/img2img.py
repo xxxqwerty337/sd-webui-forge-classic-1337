@@ -73,8 +73,12 @@ def process_batch(p, input, output_dir, inpaint_mask_dir, args, to_scale=False, 
         img = ImageOps.exif_transpose(img)
 
         if to_scale:
-            p.width = int(img.width * scale_by)
-            p.height = int(img.height * scale_by)
+            p.width = round(img.width * scale_by / 64) * 64
+            p.height = round(img.height * scale_by / 64) * 64
+
+        _w, _h = img.size
+        if not (_w % 64 == 0 and _h % 64 == 0):
+            img = images.resize_image(1, img, round(_w / 64) * 64, round(_h / 64) * 64)
 
         p.init_images = [img] * p.batch_size
 
@@ -205,10 +209,8 @@ def img2img_function(id_task: str, request: gr.Request, mode: int, prompt: str, 
     if selected_scale_tab == 1 and not is_batch:
         assert image, "Can't scale by because no image is selected"
 
-        width = int(image.width * scale_by)
-        width -= width % 8
-        height = int(image.height * scale_by)
-        height -= height % 8
+        width = round(image.width * scale_by / 64) * 64
+        height = round(image.height * scale_by / 64) * 64
 
     assert 0.0 <= denoising_strength <= 1.0, "can only work with strength in [0.0, 1.0]"
 

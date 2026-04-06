@@ -22,7 +22,6 @@ class Flux(ForgeDiffusionEngine):
 
     def __init__(self, estimated_config, huggingface_components):
         super().__init__(estimated_config, huggingface_components)
-        self.is_inpaint = False
 
         clip = CLIP(model_dict={"clip_l": huggingface_components["text_encoder"], "t5xxl": huggingface_components["text_encoder_2"]}, tokenizer_dict={"clip_l": huggingface_components["tokenizer"], "t5xxl": huggingface_components["tokenizer_2"]})
 
@@ -45,7 +44,7 @@ class Flux(ForgeDiffusionEngine):
         self.text_processing_engine_l = ClassicTextProcessingEngine(
             text_encoder=clip.cond_stage_model.clip_l,
             tokenizer=clip.tokenizer.clip_l,
-            embedding_dir=dynamic_args["embedding_dir"],
+            embedding_dir=dynamic_args.embedding_dir,
             embedding_key="clip_l",
             embedding_expected_shape=768,
             text_projection=False,
@@ -64,33 +63,30 @@ class Flux(ForgeDiffusionEngine):
         self.forge_objects_original = self.forge_objects.shallow_copy()
         self.forge_objects_after_applying_lora = self.forge_objects.shallow_copy()
 
-        self.is_flux = True
-
-        self.ref_latents = []
-
     def set_clip_skip(self, clip_skip):
         self.text_processing_engine_l.clip_skip = clip_skip
 
     @torch.inference_mode()
     def get_learned_conditioning(self, prompt: "SdConditioning"):
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
-        cond_l, pooled_l = self.text_processing_engine_l(prompt)
+        _, pooled_l = self.text_processing_engine_l(prompt)
         cond_t5 = self.text_processing_engine_t5(prompt)
         cond = dict(crossattn=cond_t5, vector=pooled_l)
 
         if self.use_distilled_cfg_scale:
             distilled_cfg_scale = getattr(prompt, "distilled_cfg_scale", 3.5) or 3.5
             cond["guidance"] = torch.FloatTensor([distilled_cfg_scale] * len(prompt))
-            print(f"Distilled CFG Scale: {distilled_cfg_scale}")
-        else:
-            print("Distilled CFG Scale is ignored for Schnell")
+            memory_management.logger.debug(f"Distilled CFG Scale: {distilled_cfg_scale}")
 
         if not prompt.is_negative_prompt:
-            if dynamic_args["kontext"] and self.ref_latents:
-                dynamic_args["ref_latents"] = self.ref_latents.copy()
-                self.ref_latents.clear()
+            if not dynamic_args.kontext:
+                dynamic_args.ref_latents.clear()
             else:
-                dynamic_args["ref_latents"] = None
+                _references = [*self.ref_latents]
+                if self.ini_latent is not None:
+                    _references.insert(0, self.ini_latent)
+                    self.ini_latent = None
+                dynamic_args.ref_latents = _references.copy()
 
         return cond
 
@@ -103,12 +99,17 @@ class Flux(ForgeDiffusionEngine):
     def encode_first_stage(self, x):
         sample = self.forge_objects.vae.encode(x.movedim(1, -1) * 0.5 + 0.5)
         sample = self.forge_objects.vae.first_stage_model.process_in(sample)
-        self.ref_latents.append(sample.cpu())
+
+        if dynamic_args.kontext:
+            if dynamic_args.is_referencing:
+                self.ref_latents.append(sample.cpu())
+            else:
+                self.ini_latent = sample.cpu()
+
         return sample.to(x)
 
     @torch.inference_mode()
     def decode_first_stage(self, x):
-        self.ref_latents.clear()
         sample = self.forge_objects.vae.first_stage_model.process_out(x)
         sample = self.forge_objects.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
         return sample.to(x)

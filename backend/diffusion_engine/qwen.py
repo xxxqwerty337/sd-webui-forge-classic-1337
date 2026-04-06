@@ -15,6 +15,7 @@ from backend.patcher.clip import CLIP
 from backend.patcher.unet import UnetPatcher
 from backend.patcher.vae import VAE
 from backend.text_processing.qwen_engine import QwenTextProcessingEngine
+from modules.shared import opts
 
 
 class QwenImage(ForgeDiffusionEngine):
@@ -22,7 +23,6 @@ class QwenImage(ForgeDiffusionEngine):
 
     def __init__(self, estimated_config, huggingface_components):
         super().__init__(estimated_config, huggingface_components)
-        self.is_inpaint = False
 
         clip = CLIP(model_dict={"qwen25_7b": huggingface_components["text_encoder"]}, tokenizer_dict={"qwen25_7b": huggingface_components["tokenizer"]})
 
@@ -44,28 +44,34 @@ class QwenImage(ForgeDiffusionEngine):
 
         self.is_wan = True
 
-        self.images_vl = []
-        self.ref_latents = []
-        self.image_prompt = ""
-
     @torch.inference_mode()
     def get_learned_conditioning(self, prompt: "SdConditioning"):
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
+
         if not prompt.is_negative_prompt:
-            if self.image_prompt:
-                return self.get_learned_conditioning_with_image(prompt)
+            _references = [*self.ref_latents]
+            if self.ini_latent is not None:
+                _references.insert(0, self.ini_latent)
+                self.ini_latent = None
+
+            if _references:
+                return self.get_learned_conditioning_with_image(prompt, _references)
             else:
-                dynamic_args["ref_latents"] = None
+                dynamic_args.ref_latents.clear()
+
         return self.text_processing_engine_qwen(prompt)
 
     @torch.inference_mode()
-    def get_learned_conditioning_with_image(self, prompt: list[str]):
-        cond = self.text_processing_engine_qwen([self.image_prompt + "".join(prompt)], images=self.images_vl)
-        self.images_vl.clear()
-        dynamic_args["ref_latents"] = self.ref_latents.copy()
-        self.ref_latents.clear()
-        self.image_prompt = ""
-        return cond
+    def get_learned_conditioning_with_image(self, prompt: list[str], images: list[torch.Tensor]):
+        images_vl, ref_latents, image_prompts = [], [], []
+        for i, image in enumerate(images):
+            v, r, p = self.encode_vision(image, i)
+            images_vl.append(v)
+            ref_latents.append(r)
+            image_prompts.append(p)
+
+        dynamic_args.ref_latents = ref_latents.copy()
+        return self.text_processing_engine_qwen(["\n".join([*image_prompts, *prompt])], images=images_vl)
 
     @torch.inference_mode()
     def get_prompt_lengths_on_ui(self, prompt):
@@ -73,7 +79,7 @@ class QwenImage(ForgeDiffusionEngine):
         return token_count, max(999, token_count)
 
     @torch.inference_mode()
-    def encode_vision(self, image):
+    def encode_vision(self, image: torch.Tensor, i: int) -> tuple[torch.Tensor, str, torch.Tensor]:
         samples = image.movedim(-1, 1)  # b, c, h, w
 
         total = int(384 * 384)
@@ -82,33 +88,43 @@ class QwenImage(ForgeDiffusionEngine):
         height = round(samples.shape[2] * scale_by)
 
         s = torch.nn.functional.interpolate(samples, size=(height, width), mode="area")
-        self.images_vl.append(s.movedim(1, -1))
+        _vision = s.movedim(1, -1)
 
-        total = int(1024 * 1024)
-        scale_by = math.sqrt(total / (samples.shape[3] * samples.shape[2]))
-        width = round(samples.shape[3] * scale_by / 8.0) * 8
-        height = round(samples.shape[2] * scale_by / 8.0) * 8
+        if opts.qwen_vae_resize:
+            total = int(1024 * 1024)
+            scale_by = math.sqrt(total / (samples.shape[3] * samples.shape[2]))
+            width = round(samples.shape[3] * scale_by / 32.0) * 32
+            height = round(samples.shape[2] * scale_by / 32.0) * 32
 
-        s = torch.nn.functional.interpolate(samples, size=(height, width), mode="area")
+            s = torch.nn.functional.interpolate(samples, size=(height, width), mode="area")
+        else:
+            s = samples.clone()
         sample = self.forge_objects.vae.encode(s.movedim(1, -1)[:, :, :, :3])
-        self.ref_latents.append(self.forge_objects.vae.first_stage_model.process_in(sample))
+        _latent = self.forge_objects.vae.first_stage_model.process_in(sample)
 
-        self.image_prompt += f"Picture {len(self.images_vl)}: <|vision_start|><|image_pad|><|vision_end|>"
+        _prompt = f"Picture {i}: <|vision_start|><|image_pad|><|vision_end|>"
+
+        return (_vision, _latent, _prompt)
 
     @torch.inference_mode()
-    def encode_first_stage(self, x):
+    def encode_first_stage(self, x: torch.Tensor):
         if x.size(0) > 1:
             x = x[0].unsqueeze(0)  # enforce batch_size of 1
+
         start_image = x.movedim(1, -1) * 0.5 + 0.5
-        self.encode_vision(start_image)
         sample = self.forge_objects.vae.encode(start_image)
         sample = self.forge_objects.vae.first_stage_model.process_in(sample)
+
+        if dynamic_args.edit:
+            if dynamic_args.is_referencing:
+                self.ref_latents.append(start_image.cpu())
+            else:
+                self.ini_latent = start_image.cpu()
+
         return sample.to(x)
 
     @torch.inference_mode()
     def decode_first_stage(self, x):
-        self.ref_latents.clear()
-        self.image_prompt = ""
         sample = self.forge_objects.vae.first_stage_model.process_out(x)
         sample = self.forge_objects.vae.decode(sample).movedim(-1, 2) * 2.0 - 1.0
         return sample.to(x)

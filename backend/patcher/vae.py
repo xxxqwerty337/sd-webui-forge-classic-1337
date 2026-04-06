@@ -121,7 +121,7 @@ def tiled_scale(samples, function, tile_x=64, tile_y=64, overlap=8, upscale_amou
 
 
 class VAE:
-    def __init__(self, model=None, device=None, dtype=None, no_init=False, *, is_wan=False):
+    def __init__(self, model=None, device=None, dtype=None, no_init=False, *, is_wan=False, is_flux2=False, is_mugen=False):
         if no_init:
             return
 
@@ -135,6 +135,12 @@ class VAE:
             self.memory_used_encode = lambda shape, dtype: (1767 * shape[2] * shape[3]) * memory_management.dtype_size(dtype)
             self.memory_used_decode = lambda shape, dtype: (2178 * shape[2] * shape[3] * 64) * memory_management.dtype_size(dtype)
 
+            if is_flux2 or is_mugen:
+                self.upscale_ratio = 16
+                self.downscale_ratio = 16
+                self.latent_channels = 32 if is_mugen else 128
+                self.memory_used_decode = lambda shape, dtype: (2178 * shape[2] * shape[3] * 64) * memory_management.dtype_size(dtype) * 4.0
+
         else:
             self.upscale_ratio = (lambda a: max(0, a * 4 - 3), 8, 8)
             self.upscale_index_formula = (4, 8, 8)
@@ -147,6 +153,8 @@ class VAE:
 
         self.output_channels = 3
         self.first_stage_model = model.eval()
+        if is_mugen:
+            self.first_stage_model.mugen = True
 
         self.device = device or memory_management.vae_device()
         offload_device = memory_management.vae_offload_device()
@@ -198,6 +206,8 @@ class VAE:
             return self.decode_tiled(samples_in).to(self.output_device)
 
         pixel_samples = None
+        _tile = False
+
         try:
             memory_used = self.memory_used_decode(samples_in.shape, self.vae_dtype)
             memory_management.load_models_gpu([self.patcher], memory_required=memory_used)
@@ -206,13 +216,17 @@ class VAE:
             batch_number = max(1, batch_number)
 
             for x in range(0, samples_in.shape[0], batch_number):
-                samples = samples_in[x : x + batch_number].to(self.vae_dtype).to(self.device)
-                out = self.process_output(self.first_stage_model.decode(samples).to(self.output_device).float())
+                samples = samples_in[x : x + batch_number].to(device=self.device, dtype=self.vae_dtype)
+                out = self.process_output(self.first_stage_model.decode(samples).to(device=self.output_device, dtype=torch.float32, copy=True))
                 if pixel_samples is None:
                     pixel_samples = torch.empty((samples_in.shape[0],) + tuple(out.shape[1:]), device=self.output_device)
                 pixel_samples[x : x + batch_number] = out
         except memory_management.OOM_EXCEPTION:
             print("Warning: Encountered Out of Memory during VAE decoding; Retrying with Tiled VAE Decoding...")
+            _tile = True
+
+        if _tile:
+            memory_management.soft_empty_cache()
             return self.decode_tiled(samples_in).to(self.output_device)
 
         pixel_samples = pixel_samples.to(self.output_device).movedim(1, -1)
@@ -240,26 +254,30 @@ class VAE:
         if memory_management.VAE_ALWAYS_TILED:
             return self.encode_tiled(pixel_samples)
 
-        pixel_samples = pixel_samples.movedim(-1, 1)
-        if self.is_wan and pixel_samples.ndim < 5:
-            pixel_samples = pixel_samples.movedim(1, 0).unsqueeze(0)
+        _samples = pixel_samples.movedim(-1, 1)
+        if self.is_wan and _samples.ndim < 5:
+            _samples = _samples.movedim(1, 0).unsqueeze(0)
 
         try:
-            memory_used = self.memory_used_encode(pixel_samples.shape, self.vae_dtype)
+            memory_used = self.memory_used_encode(_samples.shape, self.vae_dtype)
             memory_management.load_models_gpu([self.patcher], memory_required=memory_used)
             free_memory = memory_management.get_free_memory(self.device)
             batch_number = int(free_memory / max(1, memory_used))
             batch_number = max(1, batch_number)
             samples = None
-            for x in range(0, pixel_samples.shape[0], batch_number):
-                pixels_in = self.process_input(pixel_samples[x : x + batch_number]).to(self.vae_dtype).to(self.device)
+            for x in range(0, _samples.shape[0], batch_number):
+                pixels_in = self.process_input(_samples[x : x + batch_number]).to(self.vae_dtype).to(self.device)
                 out = self.first_stage_model.encode(pixels_in).to(self.output_device).float()
                 if samples is None:
-                    samples = torch.empty((pixel_samples.shape[0],) + tuple(out.shape[1:]), device=self.output_device)
+                    samples = torch.empty((_samples.shape[0],) + tuple(out.shape[1:]), device=self.output_device)
                 samples[x : x + batch_number] = out
-
+            _tile = False
         except memory_management.OOM_EXCEPTION:
             print("Warning: Encountered Out of Memory during VAE Encoding; Retrying with Tiled VAE Encoding...")
+            _tile = True
+
+        if _tile:
+            memory_management.soft_empty_cache()
             return self.encode_tiled(pixel_samples)
 
         return samples
@@ -287,8 +305,10 @@ class VAE:
         maximum = self.upscale_ratio[0](self.downscale_ratio[0](pixel_samples.shape[2]))
         return self.encode_tiled_3d(pixel_samples[:, :, :maximum], **args)
 
-    def process_input(self, image):
+    @staticmethod
+    def process_input(image: torch.Tensor):
         return image * 2.0 - 1.0
 
-    def process_output(self, image):
-        return torch.clamp((image + 1.0) / 2.0, min=0.0, max=1.0)
+    @staticmethod
+    def process_output(image: torch.Tensor):
+        return image.add_(1.0).div_(2.0).clamp_(0.0, 1.0)

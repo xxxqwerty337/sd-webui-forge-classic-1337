@@ -11,6 +11,8 @@ from modules.ui_components import FormRow
 from modules.ui_gradio_extensions import reload_javascript
 from modules_forge import main_entry
 
+CURRENT_ROW: gr.Row = None
+
 
 def get_value_for_setting(key):
     value = getattr(opts, key)
@@ -46,6 +48,17 @@ def create_setting_component(key, is_quicksettings=False):
 
     if comp == gr.State:
         return gr.State(fun())
+    elif comp == FormRow:
+        global CURRENT_ROW
+
+        if CURRENT_ROW is None:
+            CURRENT_ROW = FormRow()
+            CURRENT_ROW.__enter__()
+        else:
+            CURRENT_ROW.__exit__()
+            CURRENT_ROW = None
+
+        return gr.State(None)
 
     if info.refresh is not None:
         if is_quicksettings:
@@ -85,8 +98,8 @@ class UiSettings:
             if comp == self.dummy_component:
                 continue
 
-            # don't set (Managed by Forge) options, they revert to defaults
-            if key in ["sd_model_checkpoint", "CLIP_stop_at_last_layers", "sd_vae"]:
+            # managed by Forge, do not set
+            if key in ("sd_model_checkpoint", "sd_vae"):
                 continue
 
             if opts.set(key, value):
@@ -281,9 +294,8 @@ class UiSettings:
         self.interface = settings_interface
 
     def add_quicksettings(self):
-        accordion_open = not getattr(opts, "quicksettings_accordion_starts_closed", False)
-        with gr.Accordion(label="Quicksettings", open=accordion_open) if opts.quicksettings_accordion else nullcontext():
-            with gr.Row(elem_id="quicksettings", variant="compact", elem_classes=[opts.quicksettings_style]) as quicksettings_row:
+        with gr.Accordion(label="Quicksettings", open=not getattr(opts, "quicksettings_accordion_starts_closed", False)) if opts.quicksettings_accordion else nullcontext():
+            with gr.Row(elem_id="quicksettings", variant="compact") as quicksettings_row:
                 main_entry.make_checkpoint_manager_ui()
                 for _i, k, _item in sorted(self.quicksettings_list, key=lambda x: self.quicksettings_names.get(x[1], x[0])):
                     component = create_setting_component(k, is_quicksettings=True)
@@ -315,18 +327,19 @@ class UiSettings:
                     show_progress=False,
                 )
 
-        def button_set_checkpoint_change(model, vae, dummy):
-            if "Built in" in vae:
-                vae.remove("Built in")
-            model = sd_models.match_checkpoint_to_name(model)
-            return model, vae, opts.dumpjson()
-
+        text_set_checkpoint = gr.Textbox("", elem_id="change_checkpoint_text", visible=False)
         button_set_checkpoint = gr.Button("Change checkpoint", elem_id="change_checkpoint", visible=False)
         button_set_checkpoint.click(
-            fn=button_set_checkpoint_change,
-            js="function(c, v, n){ var ckpt = desiredCheckpointName; var vae = desiredVAEName; if (ckpt == null) ckpt = c; if (vae == 0) vae = v; desiredCheckpointName = null; desiredVAEName = 0; return [ckpt, vae, null]; }",
-            inputs=[main_entry.ui_checkpoint, main_entry.ui_vae, self.dummy_component],
-            outputs=[main_entry.ui_checkpoint, main_entry.ui_vae, self.text_settings],
+            fn=lambda ckpt: ckpt.rsplit("[", 1)[0].strip(),
+            inputs=[text_set_checkpoint],
+            outputs=[main_entry.ui_checkpoint],
+            queue=False,
+            show_progress=False,
+        ).success(
+            fn=main_entry.checkpoint_change,
+            inputs=[main_entry.ui_checkpoint, main_entry.ui_forge_preset],
+            queue=False,
+            show_progress=False,
         )
 
         component_keys = [k for k in opts.data_labels.keys() if k in self.component_dict]

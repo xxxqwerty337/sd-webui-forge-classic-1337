@@ -8,13 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import repeat
 
-from backend.memory_management import xformers_enabled
-
-if xformers_enabled():
-    from backend.attention import attention_xformers as attention_function
-else:
-    from backend.attention import attention_pytorch as attention_function
-
+from backend.attention import attention_function
 from backend.nn.flux import EmbedND, apply_rope
 from backend.utils import fp16_fix as clamp_fp16
 from backend.utils import pad_to_patch_size
@@ -322,7 +316,6 @@ class NextDiT(nn.Module):
                 for layer_id in range(n_layers)
             ]
         )
-        self.norm_final = nn.RMSNorm(dim, eps=norm_eps, elementwise_affine=True)
         self.final_layer = FinalLayer(dim, patch_size, self.out_channels, z_image_modulation=z_image_modulation)
 
         if self.pad_tokens_multiple is not None:

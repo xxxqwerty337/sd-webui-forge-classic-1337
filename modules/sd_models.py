@@ -1,6 +1,6 @@
 import gc
 import math
-import os
+import os.path
 import re
 import sys
 
@@ -9,8 +9,8 @@ import torch
 from backend import memory_management
 from backend.args import dynamic_args
 from backend.loader import forge_loader
-from modules import cache, devices, errors, extra_networks, hashes, modelloader, patches, paths, processing, script_callbacks, sd_hijack, sd_unet, sd_vae, shared  # noqa
-from modules.prompt_parser import DictWithShape, SdConditioning
+from modules import cache, devices, errors, extra_networks, hashes, modelloader, patches, paths, processing, script_callbacks, sd_unet, sd_vae, shared  # noqa
+from modules.prompt_parser import DictWithShape, SdConditioning  # noqa
 from modules.shared import cmd_opts, opts
 from modules.timer import Timer
 
@@ -42,18 +42,20 @@ def replace_key(d, key, new_key, value):
 class CheckpointInfo:
     def __init__(self, filename):
         self.filename = filename
-        abspath = os.path.abspath(filename)
-        abs_ckpt_dirs = (*cmd_opts.ckpt_dirs, model_path)
+        abspath: str = os.path.abspath(filename)
+        abs_ckpt_dirs: list[str] = [os.path.abspath(_dir) for _dir in (*cmd_opts.ckpt_dirs, model_path)]
 
         self.is_safetensors = os.path.splitext(filename)[1].lower() == ".safetensors"
 
+        # Initial fallback to prevent UnboundLocalError if no directory matches
+        name: str = os.path.basename(filename)
         for _dir in abs_ckpt_dirs:
-            if abspath.startswith(str(_dir)):
-                name = abspath.replace(str(_dir), "")
+            # Ensure both paths are absolute for consistent string comparison, fixing issues with relative paths like ../
+            if abspath.startswith(_dir):
+                name = abspath.replace(_dir, "")
                 break
 
-        if name.startswith("\\") or name.startswith("/"):
-            name = name[1:]
+        name = name.strip("/").strip("\\")
 
         def read_metadata():
             metadata = read_metadata_from_safetensors(filename)
@@ -198,7 +200,6 @@ def select_checkpoint():
         return checkpoint_info
 
     if len(checkpoints_list) == 0:
-        print("You do not have any model!")
         return None
 
     checkpoint_info = next(iter(checkpoints_list.values()))
@@ -282,10 +283,9 @@ def list_loaded_weights():
     table.add_column("Device", justify="right")
 
     for mdl in memory_management.current_loaded_models:
-        mdl.compute_inclusive_exclusive_memory()
         table.add_row(
             str(mdl.model.model.__class__.__name__),
-            f"{int(mdl.inclusive_memory / 2 ** 20)} (MB)" if mdl.inclusive_memory > 0 else "n.a.",
+            f"{int(mdl.model_loaded_memory() / 2 ** 20)} (MB)" if mdl.model_loaded_memory() > 0 else "n.a.",
             str(mdl.device),
         )
 
@@ -320,49 +320,27 @@ def forge_model_reload():
     timer = Timer()
 
     if model_data.sd_model is not None:
-        if not isinstance(model_data.sd_model, FakeInitialModel):
-            model_data.sd_model.forge_objects.unet.model.cleanup()
-            del model_data.sd_model.forge_objects.clip.tokenizer
-            del model_data.sd_model.forge_objects.clip.cond_stage_model
-            del model_data.sd_model.forge_objects.vae.first_stage_model
-
-        memory_management.unload_all_models()
-
-        for junk in (
-            "model_config",
-            "forge_objects",
-            "forge_objects_original",
-            "forge_objects_after_applying_lora",
-            "text_processing_engine",
-            "text_processing_engine_l",
-            "text_processing_engine_g",
-            "text_processing_engine_t5",
-            "model",
-        ):
-            try:
-                delattr(model_data.sd_model, junk)
-            except AttributeError:
-                pass
-
         model_data.sd_model = None
         model_data.forge_hash = ""
+        memory_management.unload_all_models()
         memory_management.soft_empty_cache()
         gc.collect()
 
     timer.record("unload existing model")
 
-    checkpoint_info = model_data.forge_loading_parameters["checkpoint_info"]
-
-    if checkpoint_info is None:
-        raise ValueError("You do not have any model! Please download at least one model in [models/Stable-diffusion].")
+    try:
+        checkpoint_info = model_data.forge_loading_parameters["checkpoint_info"]
+        assert checkpoint_info is not None
+    except Exception:
+        raise ValueError("Failed to find available model...") from None
 
     state_dict = checkpoint_info.filename
     additional_state_dicts = model_data.forge_loading_parameters.get("additional_modules", [])
 
     timer.record("cache state dict")
 
-    dynamic_args["forge_unet_storage_dtype"] = model_data.forge_loading_parameters.get("unet_storage_dtype", None)
-    dynamic_args["embedding_dir"] = cmd_opts.embeddings_dir
+    dynamic_args.forge_unet_storage_dtype = model_data.forge_loading_parameters.get("unet_storage_dtype", None)
+    dynamic_args.embedding_dir = cmd_opts.embeddings_dir
     sd_model = forge_loader(state_dict, additional_state_dicts=additional_state_dicts)
     timer.record("forge model load")
 
@@ -376,14 +354,12 @@ def forge_model_reload():
     shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
     model_data.set_sd_model(sd_model)
 
+    processing.opt_f = 16 if sd_model.__class__.__name__ == "Flux2" else 8
     script_callbacks.model_loaded_callback(sd_model)
     timer.record("scripts callbacks")
 
     print(f"Model loaded in {timer.summary()}.")
 
     model_data.forge_hash = current_hash
-
-    dynamic_args.pop("ref_latents", None)
-    dynamic_args.pop("concat_latent", None)
 
     return sd_model, True

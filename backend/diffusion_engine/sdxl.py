@@ -23,12 +23,21 @@ class StableDiffusionXL(ForgeDiffusionEngine):
 
         vae = VAE(model=huggingface_components["vae"])
 
-        unet = UnetPatcher.from_model(model=huggingface_components["unet"], diffusers_scheduler=huggingface_components["scheduler"], config=estimated_config)
+        if estimated_config.sampling_settings.pop("RF", False):
+            memory_management.logger.info("Using Rectified-Flow Scheduler...")
+            from backend.modules.k_prediction import PredictionDiscreteFlow
+
+            k_predictor = PredictionDiscreteFlow(estimated_config)
+            unet = UnetPatcher.from_model(model=huggingface_components["unet"], diffusers_scheduler=None, k_predictor=k_predictor, config=estimated_config)
+            self._RF = True
+        else:
+            unet = UnetPatcher.from_model(model=huggingface_components["unet"], diffusers_scheduler=huggingface_components["scheduler"], config=estimated_config)
+            self._RF = False
 
         self.text_processing_engine_l = ClassicTextProcessingEngine(
             text_encoder=clip.cond_stage_model.clip_l,
             tokenizer=clip.tokenizer.clip_l,
-            embedding_dir=dynamic_args["embedding_dir"],
+            embedding_dir=dynamic_args.embedding_dir,
             embedding_key="clip_l",
             embedding_expected_shape=2048,
             text_projection=False,
@@ -41,7 +50,7 @@ class StableDiffusionXL(ForgeDiffusionEngine):
         self.text_processing_engine_g = ClassicTextProcessingEngine(
             text_encoder=clip.cond_stage_model.clip_g,
             tokenizer=clip.tokenizer.clip_g,
-            embedding_dir=dynamic_args["embedding_dir"],
+            embedding_dir=dynamic_args.embedding_dir,
             embedding_key="clip_g",
             embedding_expected_shape=2048,
             text_projection=True,
@@ -68,12 +77,16 @@ class StableDiffusionXL(ForgeDiffusionEngine):
     def get_learned_conditioning(self, prompt: list[str]):
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
 
+        if self._RF:
+            shift = getattr(prompt, "distilled_cfg_scale", 3.0)
+            self.forge_objects.unet.model.predictor.set_parameters(shift=shift)
+            memory_management.logger.debug(f"Shift: {shift}")
+
         cond_l = self.text_processing_engine_l(prompt)
         cond_g, clip_pooled = self.text_processing_engine_g(prompt)
 
         width = getattr(prompt, "width", 1024) or 1024
         height = getattr(prompt, "height", 1024) or 1024
-        is_negative_prompt = getattr(prompt, "is_negative_prompt", False)
 
         crop_w = opts.sdxl_crop_left
         crop_h = opts.sdxl_crop_top
@@ -84,12 +97,15 @@ class StableDiffusionXL(ForgeDiffusionEngine):
 
         flat = torch.flatten(torch.cat(out)).unsqueeze(dim=0).repeat(clip_pooled.shape[0], 1).to(clip_pooled)
 
-        force_zero_negative_prompt = is_negative_prompt and all(x == "" for x in prompt)
-
-        if force_zero_negative_prompt:
+        if opts.sdxl_zero_neg and getattr(prompt, "is_negative_prompt", False) and all(x == "" for x in prompt):
             clip_pooled = torch.zeros_like(clip_pooled)
             cond_l = torch.zeros_like(cond_l)
             cond_g = torch.zeros_like(cond_g)
+
+        # ensure cond_l and cond_g have the same length
+        max_len = max(cond_l.shape[1], cond_g.shape[1])
+        cond_l = torch.cat([cond_l, cond_l.new_zeros(cond_l.size(0), max_len - cond_l.shape[1], cond_l.size(2))], dim=1)
+        cond_g = torch.cat([cond_g, cond_g.new_zeros(cond_g.size(0), max_len - cond_g.shape[1], cond_g.size(2))], dim=1)
 
         cond = dict(
             crossattn=torch.cat([cond_l, cond_g], dim=2),
@@ -144,7 +160,7 @@ class StableDiffusionXLRefiner(ForgeDiffusionEngine):
         self.text_processing_engine_g = ClassicTextProcessingEngine(
             text_encoder=clip.cond_stage_model.clip_g,
             tokenizer=clip.tokenizer.clip_g,
-            embedding_dir=dynamic_args["embedding_dir"],
+            embedding_dir=dynamic_args.embedding_dir,
             embedding_key="clip_g",
             embedding_expected_shape=2048,
             text_projection=True,
@@ -184,9 +200,7 @@ class StableDiffusionXLRefiner(ForgeDiffusionEngine):
 
         flat = torch.flatten(torch.cat(out)).unsqueeze(dim=0).repeat(clip_pooled.shape[0], 1).to(clip_pooled)
 
-        force_zero_negative_prompt = is_negative_prompt and all(x == "" for x in prompt)
-
-        if force_zero_negative_prompt:
+        if opts.sdxl_zero_neg and is_negative_prompt and all(x == "" for x in prompt):
             clip_pooled = torch.zeros_like(clip_pooled)
             cond_g = torch.zeros_like(cond_g)
 

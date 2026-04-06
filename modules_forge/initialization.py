@@ -1,55 +1,28 @@
 import os
 import sys
 
+from modules.timer import startup_timer
+
 INITIALIZED = False
-MONITOR_MODEL_MOVING = False
 
 
-def monitor_module_moving():
-    if not MONITOR_MODEL_MOVING:
-        return
-
-    import torch
-    import traceback
-
-    old_to = torch.nn.Module.to
-
-    def new_to(*args, **kwargs):
-        traceback.print_stack()
-        print("Model Movement")
-
-        return old_to(*args, **kwargs)
-
-    torch.nn.Module.to = new_to
-    return
-
-
-def fix_logging():
-    import logging
-
-    logging.getLogger("nunchaku.caching.teacache").addFilter(lambda record: "deprecated" not in record.getMessage().lower())
-    logging.getLogger("nunchaku.models.pulid.pulid_forward").addFilter(lambda record: "deprecated" not in record.getMessage().lower())
-    logging.getLogger("nunchaku.models.transformers.transformer_flux").addFilter(lambda record: "deprecated" not in record.getMessage().lower())
-
-    _original = logging.basicConfig
-
-    logging.basicConfig = lambda *args, **kwargs: None
-
-    try:
-        import nunchaku
-    except ImportError:
-        pass
-
-    logging.basicConfig = _original
-
-
-def initialize_forge(startup_timer):
+def initialize_forge():
     global INITIALIZED
-
     if INITIALIZED:
         return
 
     INITIALIZED = True
+
+    # region Comfy
+    # https://github.com/Comfy-Org/ComfyUI/blob/v0.10.0/main.py
+
+    os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+    os.environ["DO_NOT_TRACK"] = "1"
+
+    if os.name == "nt":
+        os.environ["MIMALLOC_PURGE_DELAY"] = "0"
+
+    # endregion
 
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "modules_forge", "packages"))
 
@@ -59,26 +32,31 @@ def initialize_forge(startup_timer):
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_device_id)
         print("Set device to:", args.gpu_device_id)
 
-    if args.cuda_malloc:
-        from modules_forge.cuda_malloc import try_cuda_malloc
+    from modules_forge.cuda_malloc import get_torch_version, try_cuda_malloc
 
+    if "rocm" in get_torch_version():
+        # https://github.com/Comfy-Org/ComfyUI/blob/v0.10.0/main.py
+        os.environ["TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL"] = "1"
+        os.environ["OCL_SET_SVM_SIZE"] = "262144"
+
+    if args.cuda_malloc:
         try_cuda_malloc()
+        startup_timer.record("cuda_malloc")
 
     from backend import memory_management
+
+    startup_timer.record("memory_management")
+
     import torch
     import torchvision  # noqa: F401
-    import pytorch_lightning  # noqa: F401
 
     startup_timer.record("import torch")
-
-    monitor_module_moving()
 
     device = memory_management.get_torch_device()
     torch.zeros((1, 1)).to(device, torch.float32)
     memory_management.soft_empty_cache()
 
-    from backend import stream
-    print("CUDA Using Stream:", stream.should_use_stream())
+    startup_timer.record("warmup")
 
     from modules_forge.shared import diffusers_dir
 
@@ -97,12 +75,16 @@ def initialize_forge(startup_timer):
     if "HF_HUB_CACHE" not in os.environ:
         os.environ["HF_HUB_CACHE"] = diffusers_dir
 
-    import modules_forge.patch_basic
-    modules_forge.patch_basic.patch_all_basics()
+    startup_timer.record("diffusers_dir")
 
-    fix_logging()
+    from modules_forge import patch_basic
+
+    patch_basic.patch_all_basics()
+
+    startup_timer.record("patch basics")
 
     from backend.huggingface import process
+
     process()
 
-    startup_timer.record("forge init")
+    startup_timer.record("decompress tokenizers")

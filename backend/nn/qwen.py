@@ -9,14 +9,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import repeat
 
-from backend.memory_management import xformers_enabled
-
-if xformers_enabled():
-    from backend.attention import attention_xformers as attention_function
-else:
-    from backend.attention import attention_pytorch as attention_function
-
 from backend.args import dynamic_args
+from backend.attention import attention_function
 from backend.nn.flux import EmbedND
 from backend.utils import pad_to_patch_size
 
@@ -402,7 +396,7 @@ class QwenImageTransformer2DModel(nn.Module):
         hidden_states, img_ids, orig_shape = self.process_img(x)
         num_embeds = hidden_states.shape[1]
 
-        ref_latents = dynamic_args.get("ref_latents", ref_latents)
+        ref_latents = ref_latents or dynamic_args.ref_latents
 
         if ref_latents is not None:
             h = 0

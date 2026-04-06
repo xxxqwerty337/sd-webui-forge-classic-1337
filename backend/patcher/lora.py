@@ -1,16 +1,36 @@
 # https://github.com/comfyanonymous/ComfyUI/blob/v0.3.77/comfy/lora.py
 
+import logging
 import weakref
 
 import torch
 
 from backend import memory_management, utils
+from backend.logging import setup_logger
 from modules_forge.packages.comfy.lora import (  # noqa
     load_lora,
     model_lora_keys_clip,
     model_lora_keys_unet,
     weight_adapter,
 )
+
+logger = logging.getLogger("lora")
+setup_logger(logger)
+
+
+def string_to_seed(data):
+    crc = 0xFFFFFFFF
+    for byte in data:
+        if isinstance(byte, str):
+            byte = ord(byte)
+        crc ^= byte
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ 0xEDB88320
+            else:
+                crc >>= 1
+    return crc ^ 0xFFFFFFFF
+
 
 extra_weight_calculators = {}
 
@@ -74,7 +94,7 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
         if isinstance(v, weight_adapter.WeightAdapterBase):
             output = v.calculate_weight(weight, key, strength, strength_model, offset, function, computation_dtype)
             if output is None:
-                print("Calculate Weight Failed: {} {}".format(v.name, key))
+                logger.error("Calculate Weight Failed: {} {}".format(v.name, key))
             else:
                 weight = output
                 if old_weight is not None:
@@ -92,20 +112,20 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
             # An extra flag to pad the weight if the diff's shape is larger than the weight
             do_pad_weight = len(v) > 1 and v[1]["pad_weight"]
             if do_pad_weight and diff.shape != weight.shape:
-                print("Pad weight {} from {} to shape: {}".format(key, weight.shape, diff.shape))
+                logger.debug("Pad weight {} from {} to shape: {}".format(key, weight.shape, diff.shape))
                 weight = weight_adapter.base.pad_tensor_to_shape(weight, diff.shape)
 
             if strength != 0.0:
                 if diff.shape != weight.shape:
-                    print("WARNING SHAPE MISMATCH {} WEIGHT NOT MERGED {} != {}".format(key, diff.shape, weight.shape))
+                    logger.warning("SHAPE MISMATCH {} WEIGHT NOT MERGED {} != {}".format(key, diff.shape, weight.shape))
                 else:
                     weight += function(strength * memory_management.cast_to_device(diff, weight.device, weight.dtype))
         elif patch_type == "set":
             weight.copy_(v[0])
         elif patch_type == "model_as_lora":
-            raise NotImplementedError('"patch_type" is not supported...')
+            raise NotImplementedError(f'"{patch_type}" is not supported...')
         else:
-            print("patch type not recognized {} {}".format(patch_type, key))
+            raise ValueError(f'"{key}" of type "{patch_type}" is not recognized...')
 
         if old_weight is not None:
             weight = old_weight
@@ -126,13 +146,10 @@ def get_parameter_devices(model):
 def set_parameter_devices(model, parameter_devices):
     for key, device in parameter_devices.items():
         p = utils.get_attr(model, key)
-        if p.device != device:
+        if not isinstance(p, torch.nn.Parameter) or p.device != device:
             p = utils.tensor2parameter(p.to(device=device))
             utils.set_attr_raw(model, key, p)
     return model
-
-
-from backend import operations
 
 
 class LoraLoader:
@@ -205,12 +222,21 @@ class LoraLoader:
             if key not in self.backup:
                 self.backup[key] = weight.to(device=offload_device)
 
+            mixed_layer = None
+
+            if hasattr(weight, "_layout_cls"):
+                mixed_layer = parent_layer
+                convert_func = getattr(mixed_layer, f"convert_{child_key}")
+                set_func = getattr(mixed_layer, f"set_{child_key}")
+                weight = convert_func(weight)
+
             bnb_layer = None
 
-            if hasattr(weight, "bnb_quantized") and operations.bnb_available:
-                bnb_layer = parent_layer
+            if hasattr(weight, "bnb_quantized"):
+                assert memory_management.bnb_enabled()
                 from backend.operations_bnb import functional_dequantize_4bit
 
+                bnb_layer = parent_layer
                 weight = functional_dequantize_4bit(weight)
 
             gguf_cls = getattr(weight, "gguf_cls", None)
@@ -224,11 +250,19 @@ class LoraLoader:
 
             try:
                 weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
-            except:
-                print("Patching LoRA weights out of memory. Retrying by offloading models.")
+                _offload = False
+            except memory_management.OOM_EXCEPTION:
+                logger.warning("Encountered Out of Memory during LoRA Patching; Retrying with Offloading...")
+                _offload = True
+
+            if _offload:
                 set_parameter_devices(self.model, parameter_devices={k: offload_device for k in parameter_devices.keys()})
                 memory_management.soft_empty_cache()
                 weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
+
+            if mixed_layer is not None:
+                set_func(weight, inplace_update=False, seed=string_to_seed(key))
+                continue
 
             if bnb_layer is not None:
                 bnb_layer.reload_weight(weight)
@@ -238,10 +272,9 @@ class LoraLoader:
                 gguf_cls.quantize_pytorch(weight, gguf_parameter)
                 continue
 
-            utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))
+            utils.set_attr(self.model, key, weight)
 
         # End
 
         set_parameter_devices(self.model, parameter_devices=parameter_devices)
         self.loaded_hash = hashes
-        return

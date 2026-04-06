@@ -164,6 +164,7 @@ options_templates.update(
     options_section(
         ("system", "System", "system"),
         {
+            "setting_allocated_vram": OptionInfo(1.0, "GPU Weights", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}).info("amount of VRAM that Forge can access").info("in % of total vram"),
             "auto_launch_browser": OptionInfo("Local", "Launch the webui in browser on startup", gr.Radio, {"choices": ("Disable", "Local", "Remote")}).info("Remote = always automatically start; Local = only when not sharing the server, such as <b>--share</b>"),
             "enable_console_prompts": OptionInfo(False, "Print the generation prompts to console"),
             "samples_log_stdout": OptionInfo(False, "Print the generation infotxt to console"),
@@ -174,6 +175,7 @@ options_templates.update(
             "enable_upscale_progressbar": OptionInfo(True, "Show a progress bar in the console for tiled upscaling"),
             "list_hidden_files": OptionInfo(True, "List the models/files under hidden directories").info('directory is hidden if its name starts with "."'),
             "dump_stacks_on_signal": OptionInfo(False, "Print the stack trace before terminating the webui via Ctrl + C"),
+            "no_spellcheck": OptionInfo(False, "Disable auto-correct / spellcheck for prompt fields").needs_reload_ui(),
         },
     )
 )
@@ -242,6 +244,8 @@ options_templates.update(
                 gr.Textbox,
                 {"lines": 3, "max_lines": 6, "placeholder": "<Prompt Start>"},
             ),
+            "divqwen": OptionDiv(),
+            "qwen_vae_resize": OptionInfo(False, "Resize input image to 1 megapixel for Qwen-Image-Edit ref_latent"),
         },
     )
 )
@@ -257,7 +261,7 @@ image to and from latent space representation. Latent space is what Stable Diffu
 to create the resulting image after the sampling is finished. For img2img, VAE is additionally used to process user's input image before the sampling.
                 """
             ),
-            "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list, infotext="VAE").info("None = always use VAE from checkpoint; Automatic = use VAE with the same filename as checkpoint"),
+            "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, {"choices": ("Automatic",), "interactive": False}),
             "sd_vae_overrides_per_model_preferences": OptionInfo(True, '"SD VAE" option overrides per-model preference'),
             "sd_vae_encode_method": OptionInfo("Full", "VAE for Encoding", gr.Radio, {"choices": ("Full", "TAESD")}, infotext="VAE Encoder").info("method to encode image to latent (img2img / Hires. fix / inpaint)"),
             "sd_vae_decode_method": OptionInfo("Full", "VAE for Decoding", gr.Radio, {"choices": ("Full", "TAESD")}, infotext="VAE Decoder").info("method to decode latent to image"),
@@ -330,6 +334,7 @@ options_templates.update(
             "hires_fix_use_firstpass_conds": OptionInfo(False, "For hires fix, calculate conds of second pass using extra networks of first pass."),
             "use_old_scheduling": OptionInfo(False, "Use old prompt editing timelines.", infotext="Old prompt editing timelines").info("For [red:green:N]; old: If N < 1, it's a fraction of steps (and hires fix uses range from 0 to 1), if N >= 1, it's an absolute number of steps; new: If N has a decimal point in it, it's a fraction of steps (and hires fix uses range from 1 to 2), othewrwise it's an absolute number of steps"),
             "use_downcasted_alpha_bar": OptionInfo(False, "Downcast model alphas_cumprod to fp16 before sampling. For reproducing old seeds.", infotext="Downcast alphas_cumprod"),
+            "sdxl_zero_neg": OptionInfo(False, "For SDXL, zero out the conditioning when negative prompt is empty").info("causes NaN when using SageAttention").needs_reload_ui(),
         },
     )
 )
@@ -365,6 +370,7 @@ options_templates.update(
         ("refiner", "Refiner", "sd"),
         {
             "show_refiner": OptionInfo(False, "Display the Refiner Accordion").info("Refiner swaps the model in the middle of generation; useful for Wan 2.2 <b>High Noise</b> to <b>Low Noise</b> switching").needs_reload_ui(),
+            "refiner_fast_sd": OptionInfo(False, 'Reload "state_dict" Only').info("EXPERIMENTAL"),
             "refiner_use_steps": OptionInfo(False, 'Switch based on "steps" instead').info('by default, Refiner swaps the model based on "sigmas" to match <a href="https://www.reddit.com/r/StableDiffusion/comments/1n3qns1/wan_22_how_many_highsteps_are_needed_a_simple/">Wan 2.2</a> \'s behavior'),
             "refiner_lora_replacement": OptionInfo(
                 "high_noise=low_noise",
@@ -427,19 +433,10 @@ options_templates.update(
             "ctrl_enter_interrupt": OptionInfo(False, "Revert [Ctrl + Enter] to only interrupt the generation").info('the current "intended" behavior is to interrupt the current generation then immediately start a new one'),
             "quicksettings_accordion": OptionInfo(False, "Place the Quicksettings under an Accordion").needs_reload_ui(),
             "quicksettings_accordion_starts_closed": OptionInfo(False, "Close the Accordion on startup").info("for the above option").needs_reload_ui(),
-            "quicksettings_style": OptionInfo("default", "Quicksettings Style", gr.Radio, {"choices": ("default", "clip-modules", "scrollbar")}).needs_reload_ui(),
-            "qs_style_exp": OptionHTML(
-                """
-<ul>
-<li><b>default:</b> Same as the original Webui - excess elements get pushed into a new row</li>
-<li><b>clip-modules:</b> Display the full name of the modules only when hovering the "VAE / Text Encoder" dropdown</li>
-<li><b>scrollbar:</b> Keep all elements within the same row, showing a scrollbar if necessary</li>
-</ul>
-                """.strip()
-            ),
             "forbidden_knowledge": OptionInfo(False, "Forbidden Knowledge").needs_restart(),
             "div_classic": OptionDiv(),
-            "compact_prompt_box": OptionInfo(False, "Compact Prompt Layout").info("put prompts inside the Generate tab, leaving more space for the gallery").needs_reload_ui(),
+            "scrollable_prompt_box": OptionInfo(False, "Scrollable Prompt Layout").info("put prompts inside a fixed-height container with a scrollbar").needs_reload_ui(),
+            "compact_prompt_box": OptionInfo(False, "Compact Prompt Layout").info("put prompts inside the Generate tab, leaving more space for the gallery").info("override scrollable").needs_reload_ui(),
             "dimensions_and_batch_together": OptionInfo(True, "Show Width/Height and Batch sliders in same row").needs_reload_ui(),
             "sd_checkpoint_dropdown_use_short": OptionInfo(False, "Show filenames without folder in the Checkpoint dropdown").info("if disabled, models under subdirectories will be listed like sdxl/anime.safetensors"),
             "hires_fix_show_sampler": OptionInfo(False, "[Hires. fix]: Show checkpoint, sampler, scheduler, and cfg options").needs_reload_ui(),
@@ -520,8 +517,8 @@ options_templates.update(
             ),
             "live_preview_fast_interrupt": OptionInfo(False, "Return image with the selected preview method on interruption").info("speed up interruption"),
             "js_live_preview_in_modal_lightbox": OptionInfo(False, "Show the live previews in full page image viewer"),
-            "show_progress_every_n_steps": OptionInfo(10, "Generate live preview every N step", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}).info("-1 = only after completion of a batch"),
-            "live_preview_refresh_period": OptionInfo(1000, "Progress Bar and Preview update interval").info("in ms"),
+            "show_progress_every_n_steps": OptionInfo(1, "Generate live preview every N step", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}).info("-1 = only after completion of a batch"),
+            "live_preview_refresh_period": OptionInfo(500, "Progress Bar and Preview update interval").info("in ms"),
             "prevent_screen_sleep_during_generation": OptionInfo(True, "Force the screen to stay awake during generation"),
         },
     )
@@ -556,6 +553,12 @@ options_templates.update(
             "sd_noise_schedule": OptionInfo("Default", "Noise schedule for sampling", gr.Radio, {"choices": ("Default", "Zero Terminal SNR")}, infotext="Noise Schedule"),
             "beta_dist_alpha": OptionInfo(0.6, "Beta scheduler - alpha", gr.Slider, {"minimum": 0.01, "maximum": 2.0, "step": 0.01}, infotext="Beta scheduler alpha"),
             "beta_dist_beta": OptionInfo(0.6, "Beta scheduler - beta", gr.Slider, {"minimum": 0.01, "maximum": 2.0, "step": 0.01}, infotext="Beta scheduler beta"),
+            "use_dynamic_shifting": OptionInfo(False, "use_dynamic_shifting"),
+            "invert_sigmas": OptionInfo(False, "invert_sigmas"),
+            "use_karras_sigmas": OptionInfo(False, "use_karras_sigmas"),
+            "use_exponential_sigmas": OptionInfo(False, "use_exponential_sigmas"),
+            "use_beta_sigmas": OptionInfo(False, "use_beta_sigmas"),
+            "stochastic_sampling": OptionInfo(False, "stochastic_sampling"),
         },
     )
 )
@@ -599,4 +602,4 @@ options_templates.update(
 )
 
 forge_shared_options.register(options_templates, options_section, OptionInfo)
-forge_presets.register(options_templates, options_section, OptionInfo)
+forge_presets.register(options_templates)

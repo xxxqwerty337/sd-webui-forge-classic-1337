@@ -1,4 +1,4 @@
-# reference: https://github.com/comfyanonymous/ComfyUI/blob/v0.3.77/comfy/supported_models.py
+# reference: https://github.com/Comfy-Org/ComfyUI/blob/master/comfy/supported_models.py
 
 from enum import Enum
 
@@ -57,10 +57,11 @@ class BASE:
         return {}
 
     def inpaint_model(self):
-        return self.unet_config.get("in_channels", -1) > 4
+        return False
 
     def __init__(self, unet_config):
         self.unet_config = unet_config.copy()
+        self.nunchaku: bool = self.unet_config.pop("nunchaku", False)
         self.sampling_settings = self.sampling_settings.copy()
         self.latent_format = self.latent_format()
         for x in self.unet_extra_config:
@@ -113,6 +114,9 @@ class SD15(BASE):
 
     latent_format = latent.SD15
     memory_usage_factor = 1.0
+
+    def inpaint_model(self):
+        return self.unet_config.get("in_channels", -1) > 4
 
     def process_clip_state_dict(self, state_dict):
         k = list(state_dict.keys())
@@ -178,6 +182,8 @@ class SDXL(BASE):
 
     unet_config = {
         "model_channels": 320,
+        "in_channels": 4,
+        "out_channels": 4,
         "use_linear_in_transformer": True,
         "transformer_depth": [0, 0, 2, 2, 10, 10],
         "context_dim": 2048,
@@ -187,6 +193,9 @@ class SDXL(BASE):
 
     latent_format = latent.SDXL
     memory_usage_factor = 0.8
+
+    def inpaint_model(self):
+        return self.unet_config.get("in_channels", -1) > 4
 
     def model_type(self, state_dict: dict):
         if "v_pred" in state_dict:
@@ -224,6 +233,23 @@ class SDXL(BASE):
         return {"clip_l": "text_encoder", "clip_g": "text_encoder_2"}
 
 
+class Mugen(SDXL):
+    huggingface_repo = "CabalResearch/Mugen"
+
+    unet_config = dict(SDXL.unet_config, in_channels=32, out_channels=32)
+
+    sampling_settings = {
+        "shift": 12.0,
+    }
+
+    latent_format = latent.SDXL_Flux2
+
+    vae_key_prefix = ["vae.", "first_stage_model."]
+
+    def inpaint_model(self):
+        return False
+
+
 class Flux(BASE):
     huggingface_repo = "black-forest-labs/FLUX.1-dev"
 
@@ -237,7 +263,7 @@ class Flux(BASE):
     unet_extra_config = {}
     latent_format = latent.Flux
 
-    memory_usage_factor = 2.8
+    memory_usage_factor = 3.1
 
     supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
 
@@ -245,10 +271,6 @@ class Flux(BASE):
     text_encoder_key_prefix = ["text_encoders."]
 
     unet_target = "transformer"
-
-    def __init__(self, unet_config):
-        super().__init__(unet_config)
-        self.nunchaku: bool = self.unet_config.pop("nunchaku", False)
 
     def model_type(self, state_dict):
         return ModelType.FLUX
@@ -283,6 +305,58 @@ class FluxSchnell(Flux):
     }
 
     supported_inference_dtypes = [torch.bfloat16, torch.float32]
+
+
+class Flux2K4B(Flux):
+    huggingface_repo = "black-forest-labs/FLUX.2-klein-4B"
+
+    unet_config = {
+        "image_model": "flux2",
+        "hidden_size": 3072,
+    }
+
+    sampling_settings = {
+        "shift": 2.02,
+    }
+
+    unet_extra_config = {}
+    latent_format = latent.Flux2
+
+    memory_usage_factor = 14.6  # 3.1 * (2 * 2) * (3072 / 2604)
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
+
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
+    def clip_target(self, state_dict={}):
+        return {"qwen3_4b.transformer": "text_encoder"}
+
+
+class Flux2K9B(Flux):
+    huggingface_repo = "black-forest-labs/FLUX.2-klein-9B"
+
+    unet_config = {
+        "image_model": "flux2",
+        "hidden_size": 4096,
+    }
+
+    sampling_settings = {
+        "shift": 2.02,
+    }
+
+    unet_extra_config = {}
+    latent_format = latent.Flux2
+
+    memory_usage_factor = 19.5  # 3.1 * (2 * 2) * (4096 / 2604)
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
+
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
+    def clip_target(self, state_dict={}):
+        return {"qwen3_8b.transformer": "text_encoder"}
 
 
 class Chroma(FluxSchnell):
@@ -365,12 +439,43 @@ class ZImage(Lumina2):
         "shift": 3.0,
     }
 
-    memory_usage_factor = 2.0
+    memory_usage_factor = 2.8
 
-    supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
+    supported_inference_dtypes = [torch.bfloat16, torch.float32]
+
+    def __init__(self, unet_config):
+        super().__init__(unet_config)
+        if self.unet_config.pop("allow_fp16", False):
+            self.supported_inference_dtypes = ZImage.supported_inference_dtypes.copy()
+            self.supported_inference_dtypes.insert(1, torch.float16)
 
     def clip_target(self, state_dict={}):
         return {"qwen3_4b.transformer": "text_encoder"}
+
+
+class Anima(BASE):
+    huggingface_repo = "circlestone-labs/Anima"
+
+    unet_config = {
+        "image_model": "anima",
+    }
+
+    sampling_settings = {
+        "multiplier": 1.0,
+        "shift": 3.0,
+    }
+
+    unet_extra_config = {}
+    latent_format = latent.Wan21
+
+    memory_usage_factor = 1.32
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
+
+    unet_target = "transformer"
+
+    def clip_target(self, state_dict={}):
+        return {"qwen3_06b.transformer": "text_encoder"}
 
 
 class WAN21_T2V(BASE):
@@ -388,7 +493,7 @@ class WAN21_T2V(BASE):
     unet_extra_config = {}
     latent_format = latent.Wan21
 
-    memory_usage_factor = 1.0
+    memory_usage_factor = 0.9
 
     supported_inference_dtypes = [torch.float16, torch.bfloat16, torch.float32]
 
@@ -442,10 +547,6 @@ class QwenImage(BASE):
 
     unet_target = "transformer"
 
-    def __init__(self, unet_config):
-        super().__init__(unet_config)
-        self.nunchaku: bool = self.unet_config.pop("nunchaku", False)
-
     def model_type(self, state_dict):
         return ModelType.FLOW
 
@@ -461,12 +562,16 @@ class QwenImage(BASE):
 models = [
     SD15,
     SDXL,
+    Mugen,
     SDXLRefiner,
     Flux,
     FluxSchnell,
+    Flux2K4B,
+    Flux2K9B,
     Chroma,
     Lumina2,
     ZImage,
+    Anima,
     WAN21_T2V,
     WAN21_I2V,
     QwenImage,

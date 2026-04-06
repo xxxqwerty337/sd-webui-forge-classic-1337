@@ -1,4 +1,4 @@
-import os
+import os.path
 
 import network
 import networks
@@ -22,7 +22,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         if lora_on_disk is None:
             return
 
-        path, ext = os.path.splitext(lora_on_disk.filename)
+        path = os.path.splitext(lora_on_disk.filename)[0]
 
         alias = lora_on_disk.get_alias()
 
@@ -64,21 +64,23 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         item["pinned"] = pinned
         item["sort_keys"]["pinned"] = 1 if pinned else 0
 
-        #   filter displayed loras by UI setting
-        sd_version = item["user_metadata"].get("sd version")
-        if sd_version in network.SdVersion.__members__:
-            item["sd_version"] = sd_version
-            sd_version = network.SdVersion[sd_version]
-        else:
-            sd_version = lora_on_disk.sd_version  #   use heuristics
-            # sd_version = network.SdVersion.Unknown     #   avoid heuristics
+        # Add pinned status for sorting (AFTER read_user_metadata)
+        pinned = item["user_metadata"].get("pinned", False)
+        item["pinned"] = pinned
+        item["sort_keys"]["pinned"] = 1 if pinned else 0
 
-        item["sd_version_str"] = str(sd_version)
+        sd_version: str = item["user_metadata"].get("sd version", None)
+        if sd_version in network.SD_VERSION:
+            item["sd_version"] = sd_version
+        else:
+            sd_version = "Unknown"
+
+        if enable_filter and shared.opts.lora_preset_filter and sd_version not in ("Unknown", shared.opts.forge_preset):
+            return None
 
         return item
 
     def list_items(self):
-        # instantiate a list to protect against concurrent modification
         names = list(networks.available_networks)
         for index, name in enumerate(names):
             item = self.create_item(name, index)
