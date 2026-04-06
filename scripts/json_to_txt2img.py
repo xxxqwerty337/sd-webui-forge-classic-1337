@@ -115,7 +115,7 @@ class Script(scripts.Script):
             original_samples_filename_pattern = shared.opts.samples_filename_pattern
             shared.opts.save_to_dirs = False
             
-            default_base_outdir = os.path.join(base_path, "outputs", "txt2img-images")
+            default_base_outdir = os.path.join(base_path, "output", "txt2img-images")
             
             if json_basename == "prompt_data.json":
                 outdir = os.path.join(default_base_outdir, date_folder)
