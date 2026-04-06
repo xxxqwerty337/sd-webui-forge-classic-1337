@@ -55,6 +55,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         self.edit_activation_text: gr.Textbox = None
         self.slider_preferred_weight: gr.Slider = None
         self.edit_notes: gr.Textbox = None
+        self.checkbox_pinned: gr.Checkbox = None  # ADD THIS LINE
         
         # Preview management components
         self.preview_gallery_html = None
@@ -421,6 +422,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
                 generate_random_prompt = gr.Button("Generate", size="lg", scale=1)
 
         self.edit_notes = gr.TextArea(label="Notes", lines=4)
+        self.checkbox_pinned = gr.Checkbox(label="Pinned", value=False)  # ADD THIS LINE
 
         generate_random_prompt.click(fn=self.generate_random_prompt, inputs=[self.edit_name_input], outputs=[random_prompt], show_progress=False)
 
