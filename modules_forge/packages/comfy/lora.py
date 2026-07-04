@@ -1,4 +1,4 @@
-# https://github.com/Comfy-Org/ComfyUI/blob/v0.11.0/comfy/lora.py
+# https://github.com/Comfy-Org/ComfyUI/blob/v0.26.1/comfy/lora.py
 
 """
 This file is part of ComfyUI.
@@ -22,7 +22,12 @@ import torch
 
 from modules_forge.packages.comfy import weight_adapter
 
-from .utils import flux_to_diffusers, unet_to_diffusers, z_image_to_diffusers
+from .utils import (
+    flux_to_diffusers,
+    krea2_to_diffusers,
+    unet_to_diffusers,
+    z_image_to_diffusers,
+)
 
 LORA_CLIP_MAP = {
     "mlp.fc1": "mlp_fc1",
@@ -105,7 +110,8 @@ def load_lora(lora, to_load):
 
 
 def model_lora_keys_clip(model, key_map={}):
-    sdk = model.state_dict().keys()
+    sdk: list[str] = model.state_dict().keys()
+
     for k in sdk:
         if k.endswith(".weight"):
             key_map["text_encoders.{}".format(k[: -len(".weight")])] = k  # generic lora format without any weird key names
@@ -163,6 +169,16 @@ def model_lora_keys_clip(model, key_map={}):
                     t5_index += 1
 
             key_map["lora_te{}_{}".format(t5_index, l_key.replace(".", "_"))] = k
+
+    for k in sdk:  # Anima
+        if not k.endswith(".weight"):
+            continue
+        if k.startswith("qwen3_06b.model"):
+            _key = k[len("qwen3_06b.model.layers.") : -len(".weight")]
+            key_map["lora_te_layers_{}".format(_key.replace(".", "_"))] = k
+        elif k.startswith("qwen3_06b.llm_adapter"):
+            _key = k[len("qwen3_06b.") : -len(".weight")]
+            key_map["lora_te_{}".format(_key.replace(".", "_"))] = k
 
     return key_map
 
@@ -223,6 +239,23 @@ def model_lora_keys_unet(model, key_map={}):
 
     if "lumina" in _model_name or "z-image" in _model_name:
         diffusers_keys = z_image_to_diffusers(model.diffusion_model.config, output_prefix="diffusion_model.")
+        for k in diffusers_keys:
+            if k.endswith(".weight"):
+                to = diffusers_keys[k]
+                key_lora = k[: -len(".weight")]
+                key_map["diffusion_model.{}".format(key_lora)] = to
+                key_map["transformer.{}".format(key_lora)] = to
+                key_map["lycoris_{}".format(key_lora.replace(".", "_"))] = to
+                key_map[key_lora] = to
+
+    if "ernie" in _model_name:
+        for k in sdk:
+            if k.startswith("diffusion_model.") and k.endswith(".weight"):
+                key_lora = k[len("diffusion_model.") : -len(".weight")]
+                key_map["transformer.{}".format(key_lora)] = k
+
+    if "krea-2" in _model_name:
+        diffusers_keys = krea2_to_diffusers(model.diffusion_model.config, output_prefix="diffusion_model.")
         for k in diffusers_keys:
             if k.endswith(".weight"):
                 to = diffusers_keys[k]

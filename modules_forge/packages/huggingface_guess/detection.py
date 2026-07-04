@@ -1,4 +1,4 @@
-# reference: https://github.com/Comfy-Org/ComfyUI/blob/v0.11.0/comfy/model_detection.py
+# reference: https://github.com/Comfy-Org/ComfyUI/blob/v0.26.1/comfy/model_detection.py
 
 import logging
 
@@ -106,7 +106,7 @@ def detect_unet_config(state_dict: dict, key_prefix: str) -> dict:
     if "{}single_transformer_blocks.0.mlp_fc1.qweight".format(key_prefix) in state_dict_keys:  # SVDQ Flux
         dit_config = {"nunchaku": True}
         dit_config["image_model"] = "flux"
-        dit_config["guidance_embed"] = True
+        dit_config["guidance_embed"] = "{}time_text_embed.guidance_embedder.linear_1.weight".format(key_prefix) in state_dict_keys
         return dit_config
 
     if "{}double_blocks.0.img_attn.proj.weight.quant_state.bitsandbytes__nf4".format(key_prefix) in state_dict_keys:  # flux1-dev-bnb-nf4
@@ -125,7 +125,7 @@ def detect_unet_config(state_dict: dict, key_prefix: str) -> dict:
         dit_config["theta"] = 10000
         dit_config["patch_size"] = 2
         dit_config["qkv_bias"] = True
-        dit_config["guidance_embed"] = True
+        dit_config["guidance_embed"] = "{}guidance_in.in_layer.weight".format(key_prefix) in state_dict_keys
         return dit_config
 
     if ("{}double_blocks.0.img_attn.norm.key_norm.scale".format(key_prefix) in state_dict_keys or "{}double_blocks.0.img_attn.norm.key_norm.weight".format(key_prefix) in state_dict_keys) and ("{}img_in.weight".format(key_prefix) in state_dict_keys or f"{key_prefix}distilled_guidance_layer.norms.0.scale" in state_dict_keys):  # Flux.1 / Flux.2
@@ -202,40 +202,33 @@ def detect_unet_config(state_dict: dict, key_prefix: str) -> dict:
         dit_config = {}
         assert "{}llm_adapter.blocks.0.cross_attn.q_proj.weight".format(key_prefix) in state_dict_keys
         dit_config["image_model"] = "anima"
-        dit_config["max_img_h"] = 240
-        dit_config["max_img_w"] = 240
-        dit_config["max_frames"] = 128
-        concat_padding_mask = True
-        dit_config["in_channels"] = int(state_dict["{}x_embedder.proj.1.weight".format(key_prefix)].shape[1] / 4) - int(concat_padding_mask)
+        dit_config["in_channels"] = int(state_dict["{}x_embedder.proj.1.weight".format(key_prefix)].shape[1] / 4) - 1
+        assert dit_config["in_channels"] == 16
         dit_config["out_channels"] = 16
         dit_config["patch_spatial"] = 2
         dit_config["patch_temporal"] = 1
         dit_config["model_channels"] = int(state_dict["{}x_embedder.proj.1.weight".format(key_prefix)].shape[0])
-        dit_config["concat_padding_mask"] = concat_padding_mask
-        dit_config["crossattn_emb_channels"] = 1024
-        dit_config["pos_emb_cls"] = "rope3d"
-        dit_config["pos_emb_learnable"] = True
-        dit_config["pos_emb_interpolation"] = "crop"
-        dit_config["min_fps"] = 1
-        dit_config["max_fps"] = 30
-
-        dit_config["use_adaln_lora"] = True
-        dit_config["adaln_lora_dim"] = 256
         assert dit_config["model_channels"] == 2048
+        dit_config["concat_padding_mask"] = True
+        dit_config["crossattn_emb_channels"] = 1024
+        dit_config["adaln_lora_dim"] = 256
         dit_config["num_blocks"] = 28
         dit_config["num_heads"] = 16
-
-        assert dit_config["in_channels"] == 16
-        dit_config["extra_per_block_abs_pos_emb"] = False
         dit_config["rope_h_extrapolation_ratio"] = 4.0
         dit_config["rope_w_extrapolation_ratio"] = 4.0
         dit_config["rope_t_extrapolation_ratio"] = 1.0
 
-        dit_config["extra_h_extrapolation_ratio"] = 1.0
-        dit_config["extra_w_extrapolation_ratio"] = 1.0
-        dit_config["extra_t_extrapolation_ratio"] = 1.0
-        dit_config["rope_enable_fps_modulation"] = False
+        return dit_config
 
+    if (_lq_w_key := "{}lq_proj.latent_proj.0.weight".format(key_prefix)) in state_dict_keys:  # PiD
+        _gate_prefix = "{}lq_proj.gate_modules.".format(key_prefix)
+        num_gates = len({k[len(_gate_prefix) :].split(".")[0] for k in state_dict_keys if k.startswith(_gate_prefix)})
+        in_ch = int(state_dict[_lq_w_key].shape[1])
+        dit_config = {"image_model": "pid"}
+        dit_config["lq_latent_channels"] = in_ch
+        dit_config["latent_spatial_down_factor"] = 16 if in_ch >= 64 else 8
+        if num_gates > 0:
+            dit_config["lq_interval"] = (14 + num_gates - 1) // num_gates
         return dit_config
 
     if "{}txt_norm.weight".format(key_prefix) in state_dict_keys:  # Qwen Image
@@ -244,6 +237,25 @@ def detect_unet_config(state_dict: dict, key_prefix: str) -> dict:
         dit_config["image_model"] = "qwen_image"
         dit_config["in_channels"] = int(state_dict["{}img_in.weight".format(key_prefix)].shape[1])
         dit_config["num_layers"] = count_blocks(state_dict_keys, "{}transformer_blocks.".format(key_prefix) + "{}.")
+        return dit_config
+
+    if "{}txtfusion.projector.weight".format(key_prefix) in state_dict_keys:  # Krea 2
+        dit_config = {}
+        dit_config["image_model"] = "krea2"
+        head_dim = 128
+        first_w = state_dict["{}first.weight".format(key_prefix)]
+        dit_config["features"] = int(first_w.shape[0])
+        dit_config["channels"] = int(first_w.shape[1]) // (2 * 2)
+        dit_config["patch"] = 2
+        dit_config["layers"] = count_blocks(state_dict_keys, "{}blocks.".format(key_prefix) + "{}.")
+        dit_config["heads"] = int(state_dict["{}blocks.0.attn.wq.weight".format(key_prefix)].shape[0]) // head_dim
+        dit_config["kvheads"] = int(state_dict["{}blocks.0.attn.wk.weight".format(key_prefix)].shape[0]) // head_dim
+        dit_config["txtlayers"] = int(state_dict["{}txtfusion.projector.weight".format(key_prefix)].shape[1])
+        dit_config["txtdim"] = int(state_dict["{}txtfusion.layerwise_blocks.0.prenorm.scale".format(key_prefix)].shape[0])
+        return dit_config
+
+    if "{}layers.0.mlp.linear_fc2.weight".format(key_prefix) in state_dict_keys:  # Ernie Image
+        dit_config = {"image_model": "ernie"}
         return dit_config
 
     if "{}input_blocks.0.0.weight".format(key_prefix) not in state_dict_keys:
@@ -298,7 +310,7 @@ def detect_unet_config(state_dict: dict, key_prefix: str) -> dict:
 
         block_keys_output = sorted(list(filter(lambda a: a.startswith(prefix_output), state_dict_keys)))
 
-        if "{}0.op.weight".format(prefix) in block_keys:  # new layer
+        if "{}0.op.weight".format(prefix) in block_keys:
             num_res_blocks.append(last_res_blocks)
             channel_mult.append(last_channel_mult)
 

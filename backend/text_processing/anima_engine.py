@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 import torch
 
 from backend import memory_management
+from backend.args import dynamic_args
 from backend.text_processing import emphasis, parsing
 from modules.shared import opts
 
@@ -20,7 +21,7 @@ class PromptChunk:
 
 class AnimaTextProcessingEngine:
     def __init__(self, text_encoder, qwen_tokenizer, t5_tokenizer):
-        super().__init__()
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
 
         self.text_encoder: "Qwen3_06B" = text_encoder
         self.qwen_tokenizer = qwen_tokenizer
@@ -77,14 +78,16 @@ class AnimaTextProcessingEngine:
         return chunks
 
     def __call__(self, texts):
-        zs = []
-        cache = {}
-
         self.emphasis = emphasis.get_current_option(opts.emphasis)()
+        if any(emphasis.uses_emphasis(x) for x in texts):
+            dynamic_args.last_extra_generation_params["Emphasis"] = self.emphasis.name
+
+        zs = []
+        cache: dict[str, tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = {}
 
         for line in texts:
             if line in cache:
-                z = cache[line]
+                z, tok, mul = cache[line]
             else:
                 chunks: list[PromptChunk] = self.tokenize_line(line)
                 assert len(chunks) == 1
@@ -94,17 +97,14 @@ class AnimaTextProcessingEngine:
                     multipliers = chunk.qwen_multipliers
 
                     z: torch.Tensor = self.process_tokens([tokens], [multipliers])[0]
+                    tok = torch.tensor(chunk.t5_tokens, dtype=torch.int)
+                    mul = torch.tensor(chunk.t5_multipliers)
 
-                cache[line] = z
+                cache[line] = (z, tok, mul)
 
-            zs.append(
-                self.anima_preprocess(
-                    z,
-                    torch.tensor(chunk.t5_tokens, dtype=torch.int),
-                    torch.tensor(chunk.t5_multipliers),
-                )
-            )
+            zs.append(self.anima_preprocess(z, tok, mul))
 
+        del cache
         return zs
 
     def anima_preprocess(self, cross_attn: torch.Tensor, t5xxl_ids: torch.Tensor, t5xxl_weights: torch.Tensor) -> torch.Tensor:

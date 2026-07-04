@@ -8,7 +8,7 @@ from io import BytesIO
 
 import gradio as gr
 
-from modules import infotext_utils, images, sysinfo, errors, ui_extra_networks, shared
+from modules import infotext_utils, images, sysinfo, errors, ui_extra_networks, errors, images, shared
 
 
 class UserMetadataEditor:
@@ -82,11 +82,11 @@ class UserMetadataEditor:
     def get_user_metadata(self, name):
         item = self.page.items.get(name, {})
 
-        user_metadata = item.get('user_metadata', None)
+        user_metadata = item.get("user_metadata", None)
         if not user_metadata:
             user_metadata = {'description': item.get('description', '')}
             item['user_metadata'] = user_metadata
-        
+
         # Ensure pinned field exists (default to False)
         if 'pinned' not in user_metadata:
             user_metadata['pinned'] = False
@@ -130,16 +130,16 @@ class UserMetadataEditor:
             preview_url = self.page.find_preview(filename)
             item["preview"] = preview_url
 
-        if preview_url:
-            preview = f'''
-            <div class='card standalone-card-preview'>
-                <img src="{html.escape(preview_url)}" class="preview">
-            </div>
-            '''
-        else:
-            preview = "<div class='card standalone-card-preview'></div>"
+        preview = ""
 
-        return preview
+        if preview_url:
+            _, preview_format = os.path.splitext(preview_url.rsplit("&mtime=", 1)[0])
+            if preview_format.lower() in (".mp4", ".webm"):
+                preview = f'<video src="{html.escape(preview_url)}" class="preview" autoplay loop muted playsinline></video>'
+            else:
+                preview = f'<img src="{html.escape(preview_url)}" class="preview">'
+
+        return f'<div class="card standalone-card-preview">{preview}</div>'
 
     def relative_path(self, path):
         for parent_path in self.page.allowed_directories_for_previews():
@@ -156,10 +156,10 @@ class UserMetadataEditor:
 
             stats = os.stat(filename)
             params = [
-                ('Filename: ', self.relative_path(filename)),
-                ('File size: ', sysinfo.pretty_bytes(stats.st_size)),
-                ('Hash: ', shorthash),
-                ('Modified: ', datetime.datetime.fromtimestamp(stats.st_mtime).strftime('%Y-%m-%d %H:%M')),
+                ("Filename: ", self.relative_path(filename)),
+                ("File size: ", sysinfo.pretty_bytes(stats.st_size)),
+                ("Hash: ", shorthash),
+                ("Modified: ", datetime.datetime.fromtimestamp(stats.st_mtime).strftime("%Y-%m-%d %H:%M")),
             ]
 
             return params
@@ -176,7 +176,7 @@ class UserMetadataEditor:
             errors.display(e, f"reading metadata info for {name}")
             params = []
 
-        table = '<table class="file-metadata">' + "".join(f"<tr><th>{name}</th><td>{value}</td></tr>" for name, value in params if value is not None) + '</table>'
+        table = '<table class="file-metadata">' + "".join(f"<tr><th>{name}</th><td>{value}</td></tr>" for name, value in params if value is not None) + "</table>"
 
         # Convert HTML description to plain text for editing
         description_html = user_metadata.get('description', '')
@@ -189,7 +189,7 @@ class UserMetadataEditor:
         filename = item.get("filename", None)
         basename, ext = os.path.splitext(filename)
 
-        metadata_path = basename + '.json'
+        metadata_path = basename + ".json"
         with open(metadata_path, "w", encoding="utf8") as file:
             json.dump(metadata, file, indent=4, ensure_ascii=False)
         self.page.lister.update_file_entry(metadata_path)
@@ -647,20 +647,16 @@ class UserMetadataEditor:
         self.write_user_metadata(name, user_metadata)
 
     def setup_save_handler(self, button, func, components):
-        button\
-            .click(fn=func, inputs=[self.edit_name_input, *components], outputs=[])\
-            .then(fn=None, _js="function(name){closePopup(); extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}", inputs=[self.edit_name_input], outputs=[])
+        button.click(fn=func, inputs=[self.edit_name_input, *components]).then(fn=None, _js="function(name){closePopup(); extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}", inputs=[self.edit_name_input])
 
     def create_editor(self):
         self.create_default_editor_elems()
 
-        self.edit_notes = gr.TextArea(label='Notes', lines=4)
+        self.edit_notes = gr.TextArea(label="Notes", lines=4)
 
         self.create_default_buttons()
 
-        self.button_edit\
-            .click(fn=self.put_values_into_components, inputs=[self.edit_name_input], outputs=[self.edit_name, self.edit_description, self.html_filedata, self.html_preview, self.edit_notes])\
-            .then(fn=lambda: gr.update(visible=True), inputs=[], outputs=[self.box])
+        self.button_edit.click(fn=self.put_values_into_components, inputs=[self.edit_name_input], outputs=[self.edit_name, self.edit_description, self.html_filedata, self.html_preview, self.edit_notes]).then(fn=lambda: gr.update(visible=True), outputs=[self.box])
 
         # Connect fetch from CivitAI button
         self.button_fetch_civitai.click(
@@ -1248,14 +1244,4 @@ class UserMetadataEditor:
         return "".join(html_parts)
 
     def setup_ui(self, gallery):
-        self.button_replace_preview.click(
-            fn=self.save_preview,
-            _js=f"function(x, y, z){{return [selected_gallery_index_id('{self.tabname + '_gallery_container'}'), y, z]}}",
-            inputs=[self.edit_name_input, gallery, self.edit_name_input],
-            outputs=[self.html_preview, self.html_status]
-        ).then(
-            fn=None,
-            _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}",
-            inputs=[self.edit_name_input],
-            outputs=[]
-        )
+        self.button_replace_preview.click(fn=self.save_preview, _js=f"function(x, y, z){{return [selected_gallery_index_id('{self.tabname + '_gallery_container'}'), y, z]}}", inputs=[self.edit_name_input, gallery, self.edit_name_input], outputs=[self.html_preview, self.html_status]).then(fn=None, _js="function(name){extraNetworksRefreshSingleCard(" + json.dumps(self.page.name) + "," + json.dumps(self.tabname) + ", name);}", inputs=[self.edit_name_input])

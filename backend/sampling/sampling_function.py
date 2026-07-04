@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 import torch
 
 from backend import memory_management, utils
-from backend.args import args
+from backend.args import args, dynamic_args
 from backend.sampling.condition import (
     Condition,
     compile_conditions,
@@ -300,7 +300,10 @@ def sampling_function_inner(model, x, timestep, uncond, cond, cond_scale, model_
     for fn in model_options.get("sampler_pre_cfg_function", []):
         model, cond, uncond_, x, timestep, model_options = fn(model, cond, uncond_, x, timestep, model_options)
 
-    cond_pred, uncond_pred = calc_cond_uncond_batch(model, cond, uncond_, x, timestep, model_options)
+    if getattr(dynamic_args.context_handler, "should_use_context", lambda *args: False)(x):
+        cond_pred, uncond_pred = dynamic_args.context_handler.execute(calc_cond_uncond_batch, model, [cond, uncond_], x, timestep, model_options)
+    else:
+        cond_pred, uncond_pred = calc_cond_uncond_batch(model, cond, uncond_, x, timestep, model_options)
 
     if "sampler_cfg_function" in model_options:
         args = {"cond": x - cond_pred, "uncond": x - uncond_pred, "cond_scale": cond_scale, "timestep": timestep, "input": x, "sigma": timestep, "cond_denoised": cond_pred, "uncond_denoised": uncond_pred, "model": model, "model_options": model_options}
@@ -372,13 +375,13 @@ def sampling_prepare(unet: "UnetPatcher", x: torch.Tensor):
         additional_model_patchers += unet.controlnet_linked_list.get_models()
 
     if unet.has_online_lora():
-        lora_memory = utils.nested_compute_size(unet.lora_patches, element_size=utils.dtype_to_element_size(unet.model.computation_dtype))
+        lora_memory = utils.nested_compute_size(unet.online_patches, element_size=utils.dtype_to_element_size(unet.model.computation_dtype))
         additional_inference_memory += lora_memory
 
     memory_management.load_models_gpu(models=[unet] + additional_model_patchers, memory_required=unet_inference_memory + additional_inference_memory, minimum_memory_required=unet_inference_memory // 2 + additional_inference_memory)
 
     if unet.has_online_lora():
-        utils.nested_move_to_device(unet.lora_patches, device=unet.current_device, dtype=unet.model.computation_dtype)
+        utils.nested_move_to_device(unet.online_patches, device=unet.current_device, dtype=unet.model.computation_dtype)
 
     real_model = unet.model
 
@@ -390,7 +393,7 @@ def sampling_prepare(unet: "UnetPatcher", x: torch.Tensor):
 
 def sampling_cleanup(unet: "UnetPatcher"):
     if unet.has_online_lora():
-        utils.nested_move_to_device(unet.lora_patches, device=unet.offload_device)
+        utils.nested_move_to_device(unet.online_patches, device=unet.offload_device)
     for cnet in unet.list_controlnets():
         cnet.cleanup()
 

@@ -19,7 +19,6 @@ class Anima(ForgeDiffusionEngine):
         clip = CLIP(model_dict={"qwen3_06b": huggingface_components["text_encoder"]}, tokenizer_dict={"qwen3_06b": huggingface_components["tokenizer"], "t5xxl": huggingface_components["tokenizer_2"]})
 
         vae = VAE(model=huggingface_components["vae"], is_wan=True)
-        vae.first_stage_model.latent_format = self.model_config.latent_format
 
         k_predictor = PredictionDiscreteFlow(estimated_config)
 
@@ -36,6 +35,7 @@ class Anima(ForgeDiffusionEngine):
         self.forge_objects_after_applying_lora = self.forge_objects.shallow_copy()
 
         self.is_wan = True
+        self.use_shift = True
 
     @torch.inference_mode()
     def get_learned_conditioning(self, prompt: list[str]):

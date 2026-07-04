@@ -1,4 +1,4 @@
-# reference: https://github.com/Comfy-Org/ComfyUI/blob/master/comfy/supported_models.py
+# reference: https://github.com/Comfy-Org/ComfyUI/blob/v0.26.1/comfy/supported_models.py
 
 from enum import Enum
 
@@ -51,7 +51,7 @@ class BASE:
         return True
 
     def model_type(self, state_dict):
-        return ModelType.EPS
+        return ModelType.FLOW
 
     def clip_target(self, state_dict: dict):
         return {}
@@ -118,6 +118,9 @@ class SD15(BASE):
     def inpaint_model(self):
         return self.unet_config.get("in_channels", -1) > 4
 
+    def model_type(self, state_dict):
+        return ModelType.EPS
+
     def process_clip_state_dict(self, state_dict):
         k = list(state_dict.keys())
         for x in k:
@@ -161,6 +164,9 @@ class SDXLRefiner(BASE):
     latent_format = latent.SDXL
     memory_usage_factor = 1.0
 
+    def model_type(self, state_dict: dict):
+        return ModelType.EPS
+
     def process_clip_state_dict(self, state_dict):
         replace_prefix = {"conditioner.embedders.0.model.": "clip_g."}
         state_dict = utils.state_dict_prefix_replace(state_dict, replace_prefix, filter_keys=True)
@@ -182,7 +188,6 @@ class SDXL(BASE):
 
     unet_config = {
         "model_channels": 320,
-        "in_channels": 4,
         "out_channels": 4,
         "use_linear_in_transformer": True,
         "transformer_depth": [0, 0, 2, 2, 10, 10],
@@ -236,7 +241,7 @@ class SDXL(BASE):
 class Mugen(SDXL):
     huggingface_repo = "CabalResearch/Mugen"
 
-    unet_config = dict(SDXL.unet_config, in_channels=32, out_channels=32)
+    unet_config = dict(SDXL.unet_config, out_channels=32)
 
     sampling_settings = {
         "shift": 12.0,
@@ -248,6 +253,9 @@ class Mugen(SDXL):
 
     def inpaint_model(self):
         return False
+
+    def model_type(self, state_dict):
+        return ModelType.FLOW
 
 
 class Flux(BASE):
@@ -329,6 +337,9 @@ class Flux2K4B(Flux):
     vae_key_prefix = ["vae."]
     text_encoder_key_prefix = ["text_encoders."]
 
+    def model_type(self, state_dict):
+        return ModelType.FLOW
+
     def clip_target(self, state_dict={}):
         return {"qwen3_4b.transformer": "text_encoder"}
 
@@ -354,6 +365,9 @@ class Flux2K9B(Flux):
 
     vae_key_prefix = ["vae."]
     text_encoder_key_prefix = ["text_encoders."]
+
+    def model_type(self, state_dict):
+        return ModelType.FLOW
 
     def clip_target(self, state_dict={}):
         return {"qwen3_8b.transformer": "text_encoder"}
@@ -413,9 +427,6 @@ class Lumina2(BASE):
 
     unet_target = "transformer"
 
-    def model_type(self, state_dict):
-        return ModelType.FLOW
-
     def clip_target(self, state_dict: dict):
         pref = self.text_encoder_key_prefix[0]
         if "{}gemma2_2b.transformer.model.embed_tokens.weight".format(pref) in state_dict:
@@ -472,6 +483,9 @@ class Anima(BASE):
 
     supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
 
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
     unet_target = "transformer"
 
     def clip_target(self, state_dict={}):
@@ -505,9 +519,6 @@ class WAN21_T2V(BASE):
     def __init__(self, unet_config):
         super().__init__(unet_config)
         self.memory_usage_factor = self.unet_config.get("dim", 2000) / 2000
-
-    def model_type(self, state_dict):
-        return ModelType.FLOW
 
     def clip_target(self, state_dict: dict):
         return {"umt5xxl": "text_encoder"}
@@ -547,9 +558,6 @@ class QwenImage(BASE):
 
     unet_target = "transformer"
 
-    def model_type(self, state_dict):
-        return ModelType.FLOW
-
     def clip_target(self, state_dict: dict):
         pref = self.text_encoder_key_prefix[0]
         if "{}.qwen25_7b.transformer.model.embed_tokens.weight".format(pref) in state_dict:
@@ -557,6 +565,94 @@ class QwenImage(BASE):
             return {"qwen25_7b.transformer": "text_encoder"}
         else:
             return {"qwen25_7b": "text_encoder"}
+
+
+class Krea2(BASE):
+    huggingface_repo = "krea/Krea-2-Raw"
+
+    unet_config = {
+        "image_model": "krea2",
+    }
+
+    sampling_settings = {
+        "multiplier": 1.0,
+        "shift": 1.15,
+    }
+
+    memory_usage_factor = 2.2
+
+    latent_format = latent.Wan21
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float16, torch.float32]
+
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
+    unet_target = "transformer"
+
+    def clip_target(self, state_dict={}):
+        return {"qwen3vl_4b.transformer": "text_encoder"}
+
+
+class ErnieImage(BASE):
+    huggingface_repo = "baidu/ERNIE-Image"
+
+    unet_config = {
+        "image_model": "ernie",
+    }
+
+    sampling_settings = {
+        "multiplier": 1000.0,
+        "shift": 3.0,
+    }
+
+    memory_usage_factor = 10.0
+
+    unet_extra_config = {}
+    latent_format = latent.Flux2
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float32]
+
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
+    unet_target = "transformer"
+
+    def clip_target(self, state_dict={}):
+        return {"ministral3_3b.transformer": "text_encoder"}
+
+
+class PiD(BASE):
+    huggingface_repo = "nvidia/PiD"
+
+    unet_config = {
+        "image_model": "pid",
+    }
+
+    sampling_settings = {
+        "shift": 1.5,
+    }
+
+    memory_usage_factor = 0.04
+
+    unet_extra_config = {}
+    latent_format = latent.RGB
+
+    supported_inference_dtypes = [torch.bfloat16, torch.float32]
+
+    vae_key_prefix = ["vae."]
+    text_encoder_key_prefix = ["text_encoders."]
+
+    unet_target = "transformer"
+
+    def clip_target(self, state_dict: dict):
+        pref = self.text_encoder_key_prefix[0]
+        if "{}gemma2_2b.transformer.model.embed_tokens.weight".format(pref) in state_dict:
+            state_dict.pop("{}gemma2_2b.logit_scale".format(pref), None)
+            state_dict.pop("{}spiece_model".format(pref), None)
+            return {"gemma2_2b.transformer": "text_encoder"}
+        else:
+            return {"gemma2_2b": "text_encoder"}
 
 
 models = [
@@ -575,4 +671,7 @@ models = [
     WAN21_T2V,
     WAN21_I2V,
     QwenImage,
+    Krea2,
+    ErnieImage,
+    PiD,
 ]

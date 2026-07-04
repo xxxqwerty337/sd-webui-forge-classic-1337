@@ -211,8 +211,8 @@ class UiSettings:
                     download_localization = gr.Button(value="Download localization template", elem_id="download_localization")
                     reload_script_bodies = gr.Button(value="Reload custom script bodies (No ui updates, No restart)", variant="secondary", elem_id="settings_reload_script_bodies")
                     with gr.Row():
-                        unload_sd_model = gr.Button(value="Unload all models", elem_id="sett_unload_sd_model")
-                        list_loaded_model = gr.Button(value="List all currently loaded models", elem_id="sett_list_loaded_model")
+                        unload_sd_model = gr.Button(value="Unload All Models", tooltip="Clear all models from RAM and VRAM", elem_id="sett_unload_sd_model")
+                        list_loaded_model = gr.Button(value="List Loaded Models", tooltip="Print out all models currently loaded", elem_id="sett_list_loaded_model")
                     with gr.Row():
                         calculate_all_checkpoint_hash = gr.Button(value="Calculate hash for all checkpoint", elem_id="calculate_all_checkpoint_hash")
                         calculate_all_checkpoint_hash_threads = gr.Number(value=1, label="Number of parallel calculations", elem_id="calculate_all_checkpoint_hash_threads", precision=0, minimum=1)
@@ -240,9 +240,9 @@ class UiSettings:
 
             license_tab.select(fn=None, _js="populateLicense")
 
-            unload_sd_model.click(fn=call_func_and_return_text(sd_models.unload_model_weights, "Unloaded all models"), inputs=[], outputs=[self.result])
+            unload_sd_model.click(fn=call_func_and_return_text(sd_models.unload_model_weights, "Unloaded all models"), outputs=[self.result])
 
-            list_loaded_model.click(fn=call_func_and_return_text(sd_models.list_loaded_weights, "List all models"), inputs=[], outputs=[self.result])
+            list_loaded_model.click(fn=call_func_and_return_text(sd_models.list_loaded_weights, "List all models"), outputs=[self.result])
 
             request_notifications.click(fn=lambda: None, inputs=[], outputs=[], _js="function(){}")
 
@@ -294,7 +294,7 @@ class UiSettings:
         self.interface = settings_interface
 
     def add_quicksettings(self):
-        with gr.Accordion(label="Quicksettings", open=not getattr(opts, "quicksettings_accordion_starts_closed", False)) if opts.quicksettings_accordion else nullcontext():
+        with gr.Accordion(label="Quicksettings", open=not opts.quicksettings_accordion_starts_closed) if opts.quicksettings_accordion else nullcontext():
             with gr.Row(elem_id="quicksettings", variant="compact") as quicksettings_row:
                 main_entry.make_checkpoint_manager_ui()
                 for _i, k, _item in sorted(self.quicksettings_list, key=lambda x: self.quicksettings_names.get(x[1], x[0])):
@@ -329,8 +329,15 @@ class UiSettings:
 
         text_set_checkpoint = gr.Textbox("", elem_id="change_checkpoint_text", visible=False)
         button_set_checkpoint = gr.Button("Change checkpoint", elem_id="change_checkpoint", visible=False)
+
+        def _change_model(ckpt: str):
+            if (model := sd_models.get_closet_checkpoint_match(ckpt)) is not None:
+                return gr.update(value=model.name)
+            gr.Warning(f'Failed to find model "{ckpt}"')
+            return gr.skip()
+
         button_set_checkpoint.click(
-            fn=lambda ckpt: ckpt.rsplit("[", 1)[0].strip(),
+            fn=_change_model,
             inputs=[text_set_checkpoint],
             outputs=[main_entry.ui_checkpoint],
             queue=False,

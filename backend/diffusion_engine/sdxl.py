@@ -1,8 +1,7 @@
-import safetensors.torch as sf
 import torch
 from huggingface_guess import model_list
 
-from backend import memory_management, utils
+from backend import memory_management
 from backend.args import dynamic_args
 from backend.diffusion_engine.base import ForgeDiffusionEngine, ForgeObjects
 from backend.nn.unet import Timestep
@@ -24,15 +23,15 @@ class StableDiffusionXL(ForgeDiffusionEngine):
         vae = VAE(model=huggingface_components["vae"])
 
         if estimated_config.sampling_settings.pop("RF", False):
-            memory_management.logger.info("Using Rectified-Flow Scheduler...")
+            memory_management.logger.info("Using Rectified-Flow Predictor...")
             from backend.modules.k_prediction import PredictionDiscreteFlow
 
             k_predictor = PredictionDiscreteFlow(estimated_config)
             unet = UnetPatcher.from_model(model=huggingface_components["unet"], diffusers_scheduler=None, k_predictor=k_predictor, config=estimated_config)
-            self._RF = True
+            self.use_shift = True
         else:
             unet = UnetPatcher.from_model(model=huggingface_components["unet"], diffusers_scheduler=huggingface_components["scheduler"], config=estimated_config)
-            self._RF = False
+            self.use_shift = False
 
         self.text_processing_engine_l = ClassicTextProcessingEngine(
             text_encoder=clip.cond_stage_model.clip_l,
@@ -76,11 +75,6 @@ class StableDiffusionXL(ForgeDiffusionEngine):
     @torch.inference_mode()
     def get_learned_conditioning(self, prompt: list[str]):
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
-
-        if self._RF:
-            shift = getattr(prompt, "distilled_cfg_scale", 3.0)
-            self.forge_objects.unet.model.predictor.set_parameters(shift=shift)
-            memory_management.logger.debug(f"Shift: {shift}")
 
         cond_l = self.text_processing_engine_l(prompt)
         cond_g, clip_pooled = self.text_processing_engine_g(prompt)
@@ -130,14 +124,6 @@ class StableDiffusionXL(ForgeDiffusionEngine):
         sample = self.forge_objects.vae.first_stage_model.process_out(x)
         sample = self.forge_objects.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
         return sample.to(x)
-
-    def save_checkpoint(self, filename):
-        sd = {}
-        sd.update(utils.get_state_dict_after_quant(self.forge_objects.unet.model.diffusion_model, prefix="model.diffusion_model."))
-        sd.update(model_list.SDXL.process_clip_state_dict_for_saving(self, utils.get_state_dict_after_quant(self.forge_objects.clip.cond_stage_model, prefix="")))
-        sd.update(utils.get_state_dict_after_quant(self.forge_objects.vae.first_stage_model, prefix="first_stage_model."))
-        sf.save_file(sd, filename)
-        return filename
 
 
 class StableDiffusionXLRefiner(ForgeDiffusionEngine):
@@ -227,11 +213,3 @@ class StableDiffusionXLRefiner(ForgeDiffusionEngine):
         sample = self.forge_objects.vae.first_stage_model.process_out(x)
         sample = self.forge_objects.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
         return sample.to(x)
-
-    def save_checkpoint(self, filename):
-        sd = {}
-        sd.update(utils.get_state_dict_after_quant(self.forge_objects.unet.model.diffusion_model, prefix="model.diffusion_model."))
-        sd.update(model_list.SDXLRefiner.process_clip_state_dict_for_saving(self, utils.get_state_dict_after_quant(self.forge_objects.clip.cond_stage_model, prefix="")))
-        sd.update(utils.get_state_dict_after_quant(self.forge_objects.vae.first_stage_model, prefix="first_stage_model."))
-        sf.save_file(sd, filename)
-        return filename
