@@ -41,11 +41,11 @@ class Script(scripts.Script):
             print(f"Error: Folder '{json_folder}' not found")
             return
         
-        json_pattern = os.path.join(json_folder, "prompt_data*.json")
+        json_pattern = os.path.join(json_folder, "*.json")
         json_files = glob.glob(json_pattern)
         
         if not json_files:
-            print(f"Error: No 'prompt_data*.json' files found in '{json_folder}'")
+            print(f"Error: No JSON files found in '{json_folder}'")
             return
         
         print(f"Found {len(json_files)} JSON file(s) to process:")
@@ -119,8 +119,11 @@ class Script(scripts.Script):
             
             if json_basename == "prompt_data.json":
                 outdir = os.path.join(default_base_outdir, date_folder)
-            else:
+            elif json_basename.startswith("prompt_data_"):
                 suffix = json_basename.replace("prompt_data_", "").replace(".json", "")
+                outdir = os.path.join(default_base_outdir, date_folder, suffix)
+            else:
+                suffix = os.path.splitext(json_basename)[0]
                 outdir = os.path.join(default_base_outdir, date_folder, suffix)
             
             print(f"Output directory: {outdir}")
@@ -242,7 +245,11 @@ class Script(scripts.Script):
                             })
                             
                             for i, img in enumerate(result.images):
-                                pp = PostprocessImageArgs(img)
+                                try:
+                                    pp = PostprocessImageArgs(img, index=i)
+                                except TypeError:
+                                    # Older versions don't take index
+                                    pp = PostprocessImageArgs(img)
                                 original_img = img.copy()
                                 adetailer_script.postprocess_image(proc, pp, *adetailer_args)
                                 if pp.image != original_img:

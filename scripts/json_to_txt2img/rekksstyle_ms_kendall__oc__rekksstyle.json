@@ -1,0 +1,1011 @@
+{
+  "Android 18 X BBC\\00001-2182737080.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, nipple suspension bikini, areola peek, horny and sexy, red swimsuit, bikini, areola slip, covered nipples",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00001-2182737080.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2182737080,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {
+        "nipple_suspension_bikini XL CAME": {
+          "url": "https://civitai.com/models/487646?modelVersionId=542261",
+          "name": "Nipple Suspension Bikini | PonyXL",
+          "type": "LORA",
+          "modelId": 487646,
+          "modelVersionId": 542261,
+          "baseModel": "Pony"
+        }
+      },
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00003-339816943.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, areola peek, horny and sexy, red sling bikini, hands behind head, posing, naughty smile",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00003-339816943.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 339816943,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00007-4125366763.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, areola peek, horny and sexy, red sling bikini, holding breasts, posing, :o, on water, wet body,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00007-4125366763.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 4125366763,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00008-1898581628.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, areola peek, horny and sexy, red sling bikini, holding breasts, posing, :o, on water, wet body, cinematic shot, getting out of water, wide shot, female focus",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00008-1898581628.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1898581628,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00010-475561421.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, areola peek, horny and sexy, red sling bikini, holding breasts, posing, :o, on water, wet body, cinematic shot, getting out of water, wide shot, female focus, view from below, body dripping water",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00010-475561421.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 475561421,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00011-2578175252.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, areola peek, horny and sexy, red sling bikini, holding breasts, posing, :o, on water, wet body, cinematic shot, getting out of water, wide shot, female focus, view from below, body dripping water",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00011-2578175252.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2578175252,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00013-1293812916.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, puffy areola, puffy nipples, horny and sexy, red sling bikini, pulling bikini top off, breasts out, :o, on water, wet body, wet breasts, cinematic shot, getting out of water, wide shot, female focus, view from below, body dripping water",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00013-1293812916.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1293812916,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00016-1524305359.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, puffy areola, puffy nipples, horny and sexy, red sling bikini, wet body, wet breasts, wide shot, female focus, view from below, body dripping water, imminent sitting",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00016-1524305359.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1524305359,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00019-2449125457.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking at viewer, puffy areola, puffy nipples, horny and sexy, red sling bikini, wide shot, female focus, view from below, sitting, spread legs, pussy slip, spreading pussy with one hand",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00019-2449125457.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2449125457,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00025-293015116.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, puffy areola, puffy nipples, horny and sexy, fully nude, wide shot, female focus, view from below, sitting, spread legs, female masturbation, fingering, masturbation, wet pussy, pussy juice",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00025-293015116.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 293015116,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00031-4207587492.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, moaning, puffy areola, puffy nipples, horny and sexy, fully nude, wide shot, female focus, view from below, sitting, spread legs, spreading pussy with one hand, wet pussy, pussy juice, female ejaculation, squirting, squirt,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00031-4207587492.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 4207587492,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00035-666052680.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking to the side, blush, :o, heavy breathing, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, cowboy shot, sitting, spread legs, spreading pussy with one hand, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, male wearing swimshorts, head grab",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00035-666052680.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 666052680,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00038-3253706815.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, blush, :o, wide-eyed, heavy breathing, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, cowboy shot, sitting, spread legs, spreading pussy with one hand, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, penis over breasts,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00038-3253706815.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3253706815,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00040-1274345590.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, blush, :o, wide-eyed, heavy breathing, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, cowboy shot, sitting, spread legs, spreading pussy with one hand, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, penis over shoulder",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00040-1274345590.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1274345590,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00041-3155333057.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking up, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, kneeling, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, licking the tip of the penis, licking the glans, handjob, motion lines:1, view from side",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00041-3155333057.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3155333057,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00042-4151164520.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking up, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, kneeling, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, licking the tip of the penis, licking the glans, handjob, motion lines:1, view from side",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00042-4151164520.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 4151164520,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00046-1910700205.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking up, one eye closed, open mouth, tongue out, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, kneeling, holding breasts, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, male masturbation, cumming on face, cum in air, cum on face, cum on breasts, motion lines:1, view from side",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00046-1910700205.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1910700205,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00047-886144266.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking up, one eye closed, open mouth, tongue out, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, kneeling, holding breasts, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, male masturbation, cumming on face, cum in air, cum on face, cum on tongue, cum on breasts, motion lines:1, view from side",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00047-886144266.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 886144266,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00048-886144267.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking up, one eye closed, open mouth, tongue out, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, kneeling, holding breasts, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, male masturbation, cumming on face, cum in air, cum on face, cum on tongue, cum on breasts, motion lines:1, view from side",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00048-886144267.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 886144267,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00051-380831338.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, depth of field, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, clenched teeth, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male:1, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, vaginal penetration, vaginal sex, just the tip, motion lines:1, view from above, pov",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00051-380831338.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 380831338,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00054-2994789505.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, looking down, clenched teeth, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, spread legs, legs up, hands behind head, armpits, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male:1, nude male, penis out, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, vaginal penetration, vaginal sex, just the tip, motion lines:1, view from above, pov",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00054-2994789505.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2994789505,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00056-1556305444.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, rolling eyes, :o, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, spread legs, legs up, hands behind head, armpits, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, vaginal penetration, vaginal sex, deep penetration, groping breasts from above, motion lines:1, view from above, pov, male pov",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob, mutated penis, 2penises, leg grab",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00056-1556305444.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 9,
+    "seed": 1556305444,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00057-124163622.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, rolling eyes, :o, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, spread legs, legs up, hands behind head, armpits, BREAK, 1male, interracial, very dark-skinned male, male standing, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, vaginal penetration, vaginal sex, deep penetration, groping breasts from above, motion lines:1, view from above, pov, male pov",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, muscular male, skinny male, handjob, mutated penis, 2penises, leg grab",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00057-124163622.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 124163622,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00067-3961351099.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, ahegao, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, leg lock, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, mating press pose, vaginal penetration, vaginal sex, deep penetration, motion lines:1, view from side,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00067-3961351099.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3961351099,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00068-955126212.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, milf, mommy vibes]}, curvy, wide hips, huge thighs, voluptuous, huge breasts, ahegao, blush, steamy breath, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, lying on floor, lying on back, leg lock, hugging, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, mating press pose, vaginal penetration, vaginal sex, deep penetration, motion lines:1, view from side,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00068-955126212.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 955126212,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00076-2172030227.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, moaning, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, girl on top, squatting, hands behind head, armpits, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse cowgirl position, anal penetration, anal sex, deep penetration, motion lines:1,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00076-2172030227.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2172030227,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00077-4103894090.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, moaning, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, girl on top, squatting, hands behind head, armpits, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse cowgirl position, anal penetration, anal sex, deep penetration, motion lines:1,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00077-4103894090.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 4103894090,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00082-3550815041.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, clenched teeth, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, girl on top, squatting, hands behind head, armpits, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse cowgirl position, anal penetration, anal sex, deep penetration, motion lines:1, cumming, cumming inside anus, cumdrip, anus dripping cum",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00082-3550815041.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3550815041,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00085-3742592156.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, clenched teeth, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, girl on top, squatting, hands behind head, armpits, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse cowgirl position, anal penetration, anal sex, deep penetration, motion lines:1, cumming, cumming inside anus, cumdrip, anus dripping cum",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze. penis out",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00085-3742592156.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3742592156,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00086-1892250983.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, looking down, smiling, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, girl on top, squatting, hands behind head, armpits, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse cowgirl position, after anal, after sex, penis out, penis dripping cum, cumdrip, anus dripping cum",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00086-1892250983.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 1892250983,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00093-3809925310.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, looking down, open mouth, tongue out, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse upright straddle, vaginal sex, vaginal penetration, groping breasts from behind, squeezing breasts, motion lines:1",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze, penis out",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00093-3809925310.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3809925310,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00094-3809925311.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, looking down, open mouth, tongue out, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse upright straddle, vaginal sex, vaginal penetration, groping breasts from behind, squeezing breasts, motion lines:1",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, leg grab:1, mist, haze, penis out",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00094-3809925311.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3809925311,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00099-2478027773.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, looking down, :o, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse suspended congress, anal sex, anal penetration, female masturbation, fingering herself, lifting person, leg grab, motion lines:1",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00099-2478027773.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2478027773,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00102-2488561397.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, open smile, tongue out, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, reverse suspended congress, anal sex, anal penetration, female ejaculation, squirting, lifting person, leg grab, motion lines:1, penis cumming inside anus, cum in anus,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00102-2488561397.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2488561397,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1600,
+    "height": 1200,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00106-2488561397.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, :o, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, vaginal sex, vaginal penetration, motion lines:1, plap, bouncing ass",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00106-2488561397.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2488561397,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00107-2488561398.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, :o, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, vaginal sex, vaginal penetration, motion lines:1, plap, bouncing ass",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00107-2488561398.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2488561398,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00109-2488561400.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, :o, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, BREAK, 1male, interracial, faceless male, bald male, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, vaginal sex, vaginal penetration, motion lines:1, plap, bouncing ass",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00109-2488561400.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2488561400,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00110-2712814774.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, clenched teeth, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, vaginal sex, vaginal penetration, motion lines:1, plap, bouncing ass, cumming, cumming inside pussy, cumdrip, cum overflow,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00110-2712814774.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2712814774,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00112-2712814776.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, rolling eyes, clenched teeth, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, vaginal sex, vaginal penetration, motion lines:1, plap, bouncing ass, cumming, cumming inside pussy, cumdrip, cum overflow,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00112-2712814776.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 2712814776,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Android 18 X BBC\\00115-3281681804.png": {
+    "prompt": "masterpiece, best quality, amazing quality, best resolution, 4k, insane details, <lora:rekksstyleC7:1>, very aesthetic, absurdres, newest, vibrant colors, smooth textures, detailed shading, natural colors, beach, blue sky, explicit, BREAK, ms_kendall_(oc)_rekks, 1girl, blue eyes, natural pink eyeshadow, red lips, blonde hair, side parted hair, flipped hair, side sweept bangs, spiked hair, neck-length hair, joy expreession, looking at viewer, smiling, flipping off with both hands, middle finger with both hands, heavy breathing, blush, steamy breath, milf, mommy vibes, curvy, wide hips, huge thighs, voluptuous, huge breasts, puffy areola, puffy nipples, horny and sexy, fully nude female, nude female, female focus, hearts around head, BREAK, 1male, interracial, very dark-skinned male, very fat male:1, nude male, very dark-skinned penis, very dark-skinned glans, large and huge penis, girthy penis, veiny penis, fat penis, wide penis, full nelson, after sex, after penetration, penis out, penis dripping cum, cumdrip, cum overflow,",
+    "negative": "loli face, child face, underage, underage face, bad quality, worst quality, worst detail, sketch, censorship, furry, patreon, text, artist name:1, artist signature, watermark:1, ((artist name/watermark on bottom left)), ((artist name/watermark on top right)), ((artist name/watermark on top left)), loli, chibi, child, bare feet, deformed legs, deformed feet, weird nose, bad anatomy, 6toes, 6digits, extra toes, washed colors, saturated colors, bledding colors, pictures on wall, posters, double chin, pubes, jpeg artifacts, compression artifacts, blue cheek marks, fat, obese, deformed body, sunset, sunrise, abs, stomach abs, oversaturated, overexposition, bad fingers, sun hat, 2heads, mutated head, ((muscular male, skinny male)), handjob, mutated penis, 2penises, mist, haze, penis out, pussy creampie",
+    "file_path": "D:\\.Metadata\\prompt_manager\\input\\Android 18 X BBC\\00115-3281681804.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 5,
+    "seed": 3281681804,
+    "model": "waiNSFWIllustrious_v120",
+    "width": 1200,
+    "height": 1600,
+    "civitai_urls": {
+      "model": {
+        "url": "https://civitai.com/models/827184?modelVersionId=1490781",
+        "name": "WAI-NSFW-illustrious-SDXL",
+        "type": "Checkpoint",
+        "modelId": 827184,
+        "modelVersionId": 1490781,
+        "baseModel": "Illustrious"
+      },
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  }
+}

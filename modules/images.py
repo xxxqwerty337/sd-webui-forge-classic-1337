@@ -801,6 +801,811 @@ IGNORED_INFO_KEYS = {
 }
 
 
+# =====================================================================
+# Multi-format generation-metadata extraction
+#
+# Ported from the standalone epd.py metadata extractor. Only the pure
+# parsing/detection logic is brought over: format autodetection for
+# A1111/Forge, ComfyUI, NovelAI, SwarmUI, Fooocus, InvokeAI, DrawThings,
+# Midjourney, DAVANT and CivitAI-tagged metadata. None of epd.py's
+# CivitAI API/hash-lookup, caching, file-routing, or CLI/batch-pipeline
+# code is included here; this is single in-memory-image metadata
+# extraction only.
+# =====================================================================
+
+NEGATIVE_PREFIX = "Negative prompt: "
+PARAMS_PREFIX = "Steps: "
+
+METADATA_FORMATS = [
+    {
+        "name": "ComfyUI",
+        "png_fields": ["prompt", "workflow", "generation_data"],
+        "jpg_fields": ["user_comment"],
+        "webp_fields": ["user_comment"],
+        "regex": re.compile(r"class_type"),
+        "is_json": True,
+    },
+    {
+        "name": "ComfyUI",
+        "webp_fields": ["camera_manufacturer", "image_descriptiion"],
+        "regex": re.compile(r"class_type"),
+        "is_json": True,
+    },
+    {
+        "name": "CivitAI",
+        "png_fields": ["parameters"],
+        "jpg_fields": ["user_comment"],
+        "regex": re.compile(r"(C|c)ivitai"),
+    },
+    {
+        "name": "DAVANT",
+        "png_fields": ["parameters", "davant__batch_parameters"],
+        "regex": re.compile(r"(S|s)teps:"),
+        "verify_fields": True,
+    },
+    {
+        "name": "DrawThings",
+        "png_fields": ["description", "usercomment", "creatortool"],
+        "regex": re.compile(r"(S|s)teps:"),
+        "is_xmp": True,
+    },
+    {
+        "name": "Fooocus",
+        "png_fields": ["parameters", "fooocus_scheme"],
+        "jpg_fields": ["user_comment"],
+        "regex": re.compile(r"Fooocus"),
+    },
+    {
+        "name": "InvokeAI",
+        "png_fields": ["invokeai_metadata", "invokeai_graph"],
+    },
+    {
+        "name": "Midjourney",
+        "png_fields": ["description"],
+        "regex": re.compile(r"^(?=.*--(?:ar|v|q|quality|style|chaos|seed|stop)\b)[\s\S]+$", re.IGNORECASE),
+    },
+    {
+        "name": "NovelAI",
+        "png_fields": ["comment", "description", "title", "software", "source"],
+        "is_json": True,
+    },
+    {
+        "name": "NovelAI",
+        "jpg_fields": ["comment", "user_comment"],
+        "is_json": True,
+    },
+    {
+        "name": "SwarmUI",
+        "png_fields": ["parameters"],
+        "jpg_fields": ["user_comment"],
+        "regex": re.compile(r"sui_image_params"),
+        "is_json": True,
+    },
+    {
+        "name": "A1111",
+        "png_fields": ["usercomment"],
+        "regex": re.compile(r"(S|s)teps:"),
+        "is_json": False,
+    },
+    {
+        "name": "A1111",
+        "png_fields": ["parameters"],
+        "jpg_fields": ["user_comment"],
+        "webp_fields": ["user_comment"],
+        "regex": re.compile(r"(S|s)teps:"),
+        "is_json": False,
+    },
+]
+
+
+def _gi_safe_json_parse(text):
+    """Safely parse JSON text, handling NaN values."""
+    if not text or not isinstance(text, str):
+        return None
+    try:
+        safe_text = re.sub(r"\bNaN\b", "null", text)
+        return json.loads(safe_text)
+    except Exception:
+        return None
+
+
+def _gi_try_parse_json_inside_text(text):
+    """Try to find and parse a JSON object inside a text string."""
+    if not text or not isinstance(text, str):
+        return None
+    first = text.find("{")
+    if first == -1:
+        return None
+    for end_offset in [1000, 5000, len(text) - first]:
+        end = min(first + end_offset, len(text))
+        candidate = text[first:end]
+        last_brace = candidate.rfind("}")
+        if last_brace != -1:
+            candidate = candidate[:last_brace + 1]
+            parsed = _gi_safe_json_parse(candidate)
+            if parsed and isinstance(parsed, dict):
+                return parsed
+    return None
+
+
+def _gi_parse_value(value):
+    """Parse a value that might be JSON or plain text."""
+    value = value.strip()
+    if not value:
+        return value
+    if (value.startswith("{") and value.endswith("}")) or (value.startswith("[") and value.endswith("]")):
+        parsed = _gi_safe_json_parse(value)
+        if parsed is not None:
+            return parsed
+    return value
+
+
+def _gi_parse_key_value_pairs(input_str):
+    """Parse key-value pairs from an A1111-style parameters string."""
+    if not input_str:
+        return {}
+
+    result = {}
+    current_key = ""
+    current_value = ""
+    in_quotes = False
+    in_braces = 0
+    in_brackets = 0
+    is_parsing_key = True
+
+    i = 0
+    while i < len(input_str):
+        char = input_str[i]
+        if char == '"' and (i == 0 or input_str[i - 1] != "\\"):
+            in_quotes = not in_quotes
+        elif not in_quotes:
+            if char == "{":
+                in_braces += 1
+            elif char == "}":
+                in_braces -= 1
+            elif char == "[":
+                in_brackets += 1
+            elif char == "]":
+                in_brackets -= 1
+        if char == ":" and is_parsing_key and not in_quotes and in_braces == 0 and in_brackets == 0:
+            is_parsing_key = False
+            i += 1
+            continue
+        if char == "," and not in_quotes and in_braces == 0 and in_brackets == 0:
+            if current_key:
+                result[current_key.strip()] = _gi_parse_value(current_value.strip())
+            current_key = ""
+            current_value = ""
+            is_parsing_key = True
+            i += 1
+            continue
+        if is_parsing_key:
+            current_key += char
+        else:
+            current_value += char
+        i += 1
+
+    if current_key:
+        result[current_key.strip()] = _gi_parse_value(current_value.strip())
+    return result
+
+
+def _gi_get_a1111_metadata(metadata_string):
+    """Parse A1111/Forge format metadata."""
+    if not metadata_string:
+        return {}
+
+    parts = []
+    current_part = ""
+
+    lines = metadata_string.split("\n")
+
+    for line in lines:
+        if line.startswith(NEGATIVE_PREFIX.strip()):
+            if current_part:
+                parts.append(current_part.strip())
+            parts.append(line)
+            current_part = ""
+        elif line.startswith(PARAMS_PREFIX):
+            if current_part:
+                parts.append(current_part.strip())
+            parts.append(line)
+            current_part = ""
+        else:
+            current_part += line + "\n"
+
+    if current_part.strip():
+        parts.append(current_part.strip())
+
+    result = {"prompt": "", "negative": "", "extra": ""}
+
+    for part in parts:
+        if part.startswith(PARAMS_PREFIX):
+            result["extra"] = part
+        elif part.startswith(NEGATIVE_PREFIX.strip()):
+            result["negative"] = part[len(NEGATIVE_PREFIX):].strip()
+        else:
+            if result["prompt"]:
+                result["prompt"] += "\n" + part
+            else:
+                result["prompt"] = part
+
+    return result
+
+
+def _gi_get_novelai_metadata(metadata_string):
+    """Parse NovelAI format metadata (JSON)."""
+    if not metadata_string:
+        return None
+
+    parsed = _gi_safe_json_parse(metadata_string)
+
+    if not parsed or not isinstance(parsed, dict):
+        return None
+
+    if not any(key in parsed for key in ["prompt", "uc", "steps", "sampler"]):
+        return None
+
+    result = {
+        "prompt": parsed.get("prompt", ""),
+        "negative": parsed.get("uc", ""),
+        "steps": parsed.get("steps"),
+        "sampler": parsed.get("sampler"),
+        "cfg_scale": parsed.get("scale"),
+        "seed": parsed.get("seed"),
+        "width": parsed.get("width"),
+        "height": parsed.get("height"),
+    }
+
+    extra_parts = []
+    if result["steps"]:
+        extra_parts.append(f"Steps: {result['steps']}")
+    if result["sampler"]:
+        extra_parts.append(f"Sampler: {result['sampler']}")
+    if result["cfg_scale"]:
+        extra_parts.append(f"CFG scale: {result['cfg_scale']}")
+    if result["seed"]:
+        extra_parts.append(f"Seed: {result['seed']}")
+    if result["width"] and result["height"]:
+        extra_parts.append(f"Size: {result['width']}x{result['height']}")
+
+    result["extra"] = ", ".join(extra_parts)
+
+    return result
+
+
+# A few ComfyUI sampler names don't translate to WebUI's k_-prefixed alias
+# scheme by simple prefixing (e.g. ComfyUI's "dpm_adaptive" vs WebUI's alias
+# "k_dpm_ad", or ComfyUI's "dpmpp_2s_ancestral" vs WebUI's "k_dpmpp_2s_a").
+# Map ComfyUI's exact sampler_name strings straight to WebUI's lowercased
+# display names (these are looked up directly, bypassing samplers_map).
+_GI_COMFYUI_SAMPLER_OVERRIDES = {
+    "dpm_2_ancestral": "dpm2 a",
+    "dpm_adaptive": "dpm adaptive",
+    "dpmpp_2s_ancestral": "dpm++ 2s a",
+    "dpmpp_2m_sde_heun": "dpm++ 2m sde heun",
+    "dpm_2": "dpm2",
+}
+
+
+def _gi_normalize_sampler_name(sampler_name):
+    """Translate a ComfyUI-style sampler name (e.g. "euler_ancestral",
+    "dpmpp_2m") into WebUI's display name (e.g. "Euler a", "DPM++ 2M").
+
+    ComfyUI's KSampler uses bare k-diffusion function-style names with no
+    prefix ("euler_ancestral", "dpmpp_sde"), while WebUI's samplers_map keys
+    its aliases with a "k_" prefix ("k_euler_ancestral", "k_dpmpp_sde"), and
+    a handful of samplers use irregular aliases that don't follow that
+    pattern at all. This tries, in order: the bare name as-is (covers things
+    like "ddim", "lcm", "euler" that happen to already match a WebUI name or
+    alias), then with a "k_" prefix prepended, then a small override table
+    for the known irregular cases, falling back to the original string
+    unchanged if nothing matches so unrecognized/future sampler names aren't
+    silently dropped — they simply won't auto-select in the UI.
+    """
+    if not sampler_name or not isinstance(sampler_name, str):
+        return sampler_name
+
+    candidate = sampler_name.strip().lower()
+    if not candidate:
+        return sampler_name
+
+    try:
+        mapped = sd_samplers.samplers_map.get(candidate)
+        if not mapped:
+            mapped = sd_samplers.samplers_map.get(f"k_{candidate}")
+        if not mapped and candidate in _GI_COMFYUI_SAMPLER_OVERRIDES:
+            mapped = sd_samplers.samplers_map.get(_GI_COMFYUI_SAMPLER_OVERRIDES[candidate])
+    except Exception:
+        mapped = None
+
+    return mapped if mapped else sampler_name
+
+
+def _gi_get_comfyui_metadata(workflow_data):
+    """Extract metadata from a ComfyUI workflow graph."""
+    if not isinstance(workflow_data, dict):
+        return None
+
+    negative_keywords = [
+        "bad quality", "worst quality", "low quality", "bad anatomy", "lowres",
+        "ugly", "deformed", "mutant", "mutated", "disfigured", "distorted",
+        "censorship", "censored", "pixelated", "blurry", "blurred",
+        "malformed", "extra limbs", "missing limbs", "poorly drawn",
+        "gross proportions", "watermark", "signature", "text", "error",
+        "cropped", "jpeg artifacts", "compression artifacts",
+    ]
+
+    def classify_by_meta_title(node):
+        if not isinstance(node, dict):
+            return None
+        meta = node.get("_meta", {})
+        if not isinstance(meta, dict):
+            return None
+        title = meta.get("title", "")
+        if not isinstance(title, str):
+            return None
+        title_lower = title.lower()
+        if "positive" in title_lower:
+            return "positive"
+        elif "negative" in title_lower:
+            return "negative"
+        return None
+
+    def classify_by_field_name(field_name):
+        field_lower = field_name.lower()
+        if field_lower == "positive":
+            return "positive"
+        elif field_lower == "negative":
+            return "negative"
+        return None
+
+    def classify_by_content(text):
+        if not text or not isinstance(text, str):
+            return None
+        text_lower = text.lower()
+        negative_matches = [kw for kw in negative_keywords if kw in text_lower]
+        if len(negative_matches) >= 2:
+            return "negative"
+        return None
+
+    def get_nodes_values(graph, class_regex, fields, check_widgets=False):
+        results = {"positive": [], "negative": []}
+
+        for node_id, node in graph.items():
+            if not isinstance(node, dict):
+                continue
+
+            class_type = str(node.get("class_type") or node.get("type", "")).lower()
+            if not class_regex.search(class_type):
+                continue
+
+            node_classification = classify_by_meta_title(node)
+
+            inputs = node.get("inputs", {})
+            if isinstance(inputs, dict):
+                for field in fields:
+                    value = inputs.get(field)
+                    if isinstance(value, (str, int, float)) and str(value).strip():
+                        value_str = str(value)
+
+                        if len(value_str.strip()) < 10:
+                            continue
+
+                        classification = None
+
+                        if node_classification:
+                            classification = node_classification
+
+                        if not classification:
+                            classification = classify_by_field_name(field)
+
+                        if not classification:
+                            classification = classify_by_content(value_str)
+
+                        if not classification:
+                            classification = "positive"
+
+                        results[classification].append(value_str)
+
+            if check_widgets and "widgets_values" in node:
+                widgets = node["widgets_values"]
+
+                if isinstance(widgets, list):
+                    for value in widgets:
+                        if isinstance(value, str) and len(value) > 20:
+                            if value.endswith(".safetensors") or value.endswith(".pt") or value.endswith(".ckpt"):
+                                continue
+
+                            if value in ["Baked VAE", "none", "comfy", "auto", "simple"]:
+                                continue
+
+                            classification = None
+
+                            if node_classification:
+                                classification = node_classification
+
+                            if not classification:
+                                classification = classify_by_content(value)
+
+                            if not classification:
+                                classification = "positive"
+
+                            results[classification].append(value)
+
+        return results
+
+    def get_first(graph, class_regex, fields):
+        for node_id, node in graph.items():
+            if not isinstance(node, dict):
+                continue
+            class_type = str(node.get("class_type") or node.get("type", "")).lower()
+            if not class_regex.search(class_type):
+                continue
+            inputs = node.get("inputs", {})
+            if isinstance(inputs, dict):
+                for field in fields:
+                    value = inputs.get(field)
+                    if isinstance(value, (str, int, float)) and str(value).strip():
+                        return str(value)
+        return None
+
+    prompt_results = get_nodes_values(
+        workflow_data,
+        re.compile(r"cliptextencode|wildcard|textbox|eff\. loader|efficient loader|ttn text|string variable", re.IGNORECASE),
+        ["text", "positive", "negative", "wildcard_text", "clip_l", "t5xxl", "string"],
+        check_widgets=True,
+    )
+
+    metadata = {
+        "prompt": "\n".join(prompt_results["positive"]) if prompt_results["positive"] else "",
+        "negative": "\n".join(prompt_results["negative"]) if prompt_results["negative"] else "",
+        "steps": get_first(workflow_data, re.compile(r"scheduler|sampler|ksampler", re.IGNORECASE), ["steps"]),
+        "sampler": _gi_normalize_sampler_name(get_first(workflow_data, re.compile(r"scheduler|sampler|ksampler", re.IGNORECASE), ["sampler_name"])),
+        "scheduler": get_first(workflow_data, re.compile(r"scheduler|sampler|ksampler", re.IGNORECASE), ["scheduler"]),
+        "cfg_scale": get_first(workflow_data, re.compile(r"guidance|sampler|ksampler|cliptextencode", re.IGNORECASE), ["guidance", "cfg"]),
+        "seed": get_first(workflow_data, re.compile(r"randomnoise|sampler|ksampler|seed", re.IGNORECASE), ["noise_seed", "seed"]),
+        "width": get_first(workflow_data, re.compile(r"latentimage|loader|efficient", re.IGNORECASE), ["width", "empty_latent_width"]),
+        "height": get_first(workflow_data, re.compile(r"latentimage|loader|efficient", re.IGNORECASE), ["height", "empty_latent_height"]),
+        "model": get_first(workflow_data, re.compile(r"checkpoint|loader|efficient", re.IGNORECASE), ["ckpt_name", "base_ckpt_name", "unet_name"]),
+        "vae": get_first(workflow_data, re.compile(r"vae|loader|efficient", re.IGNORECASE), ["vae_name"]),
+    }
+
+    return metadata
+
+
+def _gi_clean_prompt_text(text):
+    """Remove embedding URNs and normalize whitespace/commas in a prompt string."""
+    if not text or not isinstance(text, str):
+        return text
+
+    text = re.sub(r"embedding:urn:air:[^:]+:embedding:civitai:\d+@\d+", "", text)
+    text = re.sub(r"\bembedding:\S+", "", text)
+    text = re.sub(r",(\s*,)+", ",", text)
+    text = re.sub(r",\s*\n\s*,", ",", text)
+    text = re.sub(r"^\s*,+\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\s*,+\s*$", "", text, flags=re.MULTILINE)
+    text = re.sub(r" +", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = text.strip()
+    text = text.strip(",").strip()
+
+    return text
+
+
+def _gi_parse_extrametadata(extra_metadata_str):
+    """Parse CivitAI's extraMetadata field (JSON string with prompt data)."""
+    if not extra_metadata_str or not isinstance(extra_metadata_str, str):
+        return None
+
+    try:
+        data = _gi_safe_json_parse(extra_metadata_str)
+
+        if not data or not isinstance(data, dict):
+            try:
+                unescaped = json.loads(f'"{extra_metadata_str}"')
+                data = _gi_safe_json_parse(unescaped)
+            except Exception:
+                pass
+
+        if not data or not isinstance(data, dict):
+            return None
+
+        result = {
+            "prompt": _gi_clean_prompt_text(data.get("prompt", "")),
+            "negative": _gi_clean_prompt_text(data.get("negativePrompt", "")),
+            "steps": data.get("steps"),
+            "cfg_scale": data.get("cfgScale"),
+            "sampler": data.get("sampler"),
+            "seed": data.get("seed"),
+        }
+
+        return result
+
+    except Exception:
+        return None
+
+
+def _gi_detect_comfyui_workflow(data):
+    """Detect if data is a ComfyUI workflow and extract metadata from it."""
+    if not isinstance(data, dict):
+        return None
+
+    nodes = data.get("nodes") or data.get("graph")
+
+    if isinstance(nodes, list):
+        nodes_dict = {}
+        for node in nodes:
+            if isinstance(node, dict) and "id" in node:
+                nodes_dict[str(node["id"])] = node
+        nodes = nodes_dict if nodes_dict else None
+
+    if not nodes and isinstance(data, dict):
+        node_count = sum(1 for v in data.values() if isinstance(v, dict) and ("class_type" in v or "type" in v))
+        if node_count > 0:
+            nodes = data
+
+    if not nodes:
+        for v in data.values():
+            if isinstance(v, dict) and ("class_type" in v or "type" in v or "nodes" in v):
+                maybe = v.get("nodes") or v.get("graph")
+                if isinstance(maybe, dict):
+                    nodes = maybe
+                    break
+
+    if not isinstance(nodes, dict):
+        return None
+
+    metadata = _gi_get_comfyui_metadata(nodes)
+    if metadata is None:
+        return None
+
+    extra_metadata_str = data.get("extraMetadata")
+    if extra_metadata_str:
+        extra_data = _gi_parse_extrametadata(extra_metadata_str)
+
+        if extra_data:
+            if not metadata.get("prompt") and extra_data.get("prompt"):
+                metadata["prompt"] = extra_data["prompt"]
+
+            if not metadata.get("negative") and extra_data.get("negative"):
+                metadata["negative"] = extra_data["negative"]
+
+            for key in ["steps", "cfg_scale", "sampler", "seed"]:
+                if not metadata.get(key) and extra_data.get(key):
+                    metadata[key] = extra_data[key]
+
+    if metadata.get("prompt"):
+        metadata["prompt"] = _gi_clean_prompt_text(metadata["prompt"])
+
+    if metadata.get("negative"):
+        metadata["negative"] = _gi_clean_prompt_text(metadata["negative"])
+
+    if metadata:
+        return {"workflow": data, "prompt_data": metadata}
+    return None
+
+
+def _gi_to_a1111_format(normalized):
+    """Convert normalized (non-A1111) metadata into an A1111-style parameters dict."""
+    out = {"prompt": normalized.get("prompt", ""), "negative": normalized.get("negative", ""), "extra": ""}
+    extra_parts = []
+    steps = normalized.get("steps") or "0"
+    extra_parts.append(f"Steps: {steps}")
+    if normalized.get("sampler"):
+        extra_parts.append(f"Sampler: {normalized['sampler']}")
+    if normalized.get("cfg_scale"):
+        extra_parts.append(f"CFG scale: {normalized['cfg_scale']}")
+    if normalized.get("seed"):
+        extra_parts.append(f"Seed: {normalized['seed']}")
+    width = normalized.get("width")
+    height = normalized.get("height")
+    if width and height:
+        extra_parts.append(f"Size: {width}x{height}")
+    if normalized.get("modelHash"):
+        extra_parts.append(f"Model hash: {normalized['modelHash']}")
+    if normalized.get("model"):
+        extra_parts.append(f"Model: {normalized['model']}")
+    if normalized.get("denoise"):
+        extra_parts.append(f"Denoising strength: {normalized['denoise']}")
+    out["extra"] = ", ".join(extra_parts)
+    return out
+
+
+def _gi_convert_to_a1111_metadata(raw_metadata, file_type):
+    """Run the full format-detection cascade and normalize the result to an A1111-style dict.
+
+    raw_metadata: dict of lowercase-keyed metadata fields (as produced by
+    PIL's image.info, supplemented with EXIF/XP comment text for jpg/webp).
+    file_type: one of 'png', 'jpg', 'webp' (anything else is treated like png).
+    """
+    detected_format_name = None
+    normalized_metadata = None
+
+    for format_def in METADATA_FORMATS:
+        format_name = format_def["name"]
+
+        if file_type == "webp" and format_def.get("webp_fields"):
+            fields = format_def["webp_fields"]
+        elif file_type == "jpg" and format_def.get("jpg_fields"):
+            fields = format_def["jpg_fields"]
+        elif format_def.get("png_fields"):
+            fields = format_def["png_fields"]
+        else:
+            continue
+
+        if format_def.get("verify_fields"):
+            if not all(field in raw_metadata for field in fields):
+                continue
+
+        raw_value = None
+        for field in fields:
+            if field in raw_metadata:
+                raw_value = raw_metadata[field]
+                break
+
+        if not raw_value or not isinstance(raw_value, str):
+            continue
+
+        if format_def.get("regex"):
+            if not format_def["regex"].search(raw_value):
+                continue
+
+        parsed_json = None
+        if "is_json" in format_def:
+            parsed_json = _gi_safe_json_parse(raw_value)
+
+            if parsed_json is None:
+                colon_pos = raw_value.find(":")
+                if colon_pos != -1:
+                    parsed_json = _gi_safe_json_parse(raw_value[colon_pos + 1:])
+
+            if format_def["is_json"] and parsed_json is None:
+                continue
+
+            if not format_def["is_json"] and parsed_json is not None:
+                continue
+
+        if normalized_metadata:
+            continue
+
+        if format_name == "ComfyUI":
+            json_data = parsed_json or _gi_try_parse_json_inside_text(raw_value)
+
+            comfy_result = None
+            if json_data:
+                comfy_result = _gi_detect_comfyui_workflow(json_data)
+
+            if comfy_result and not comfy_result["prompt_data"].get("prompt"):
+                if "workflow" in raw_metadata:
+                    workflow_data = raw_metadata["workflow"]
+                    workflow_json = None
+
+                    if isinstance(workflow_data, str):
+                        workflow_json = _gi_safe_json_parse(workflow_data) or _gi_try_parse_json_inside_text(workflow_data)
+                    elif isinstance(workflow_data, dict):
+                        workflow_json = workflow_data
+
+                    if workflow_json:
+                        comfy_result_workflow = _gi_detect_comfyui_workflow(workflow_json)
+                        if comfy_result_workflow and comfy_result_workflow["prompt_data"].get("prompt"):
+                            comfy_result["prompt_data"]["prompt"] = comfy_result_workflow["prompt_data"].get("prompt", "")
+                            comfy_result["prompt_data"]["negative"] = comfy_result_workflow["prompt_data"].get("negative", "")
+
+            elif not comfy_result and "workflow" in raw_metadata:
+                workflow_data = raw_metadata["workflow"]
+
+                if isinstance(workflow_data, str):
+                    workflow_json = _gi_safe_json_parse(workflow_data) or _gi_try_parse_json_inside_text(workflow_data)
+                    if workflow_json:
+                        comfy_result = _gi_detect_comfyui_workflow(workflow_json)
+                elif isinstance(workflow_data, dict):
+                    comfy_result = _gi_detect_comfyui_workflow(workflow_data)
+
+            if comfy_result:
+                normalized_metadata = comfy_result["prompt_data"]
+                normalized_metadata["_is_comfyui"] = True
+                normalized_metadata["_workflow"] = comfy_result["workflow"]
+                detected_format_name = "ComfyUI"
+
+        elif format_name == "NovelAI":
+            if parsed_json:
+                normalized_metadata = _gi_get_novelai_metadata(json.dumps(parsed_json))
+            else:
+                normalized_metadata = _gi_get_novelai_metadata(raw_value)
+            if normalized_metadata:
+                detected_format_name = "NovelAI"
+
+        elif format_name == "A1111":
+            normalized_metadata = _gi_get_a1111_metadata(raw_value)
+            if normalized_metadata and (normalized_metadata.get("prompt") or normalized_metadata.get("extra")):
+                detected_format_name = "A1111"
+
+        elif not normalized_metadata:
+            normalized_metadata = _gi_get_a1111_metadata(raw_value)
+            detected_format_name = format_name
+
+    if not normalized_metadata:
+        return None
+
+    if isinstance(normalized_metadata, dict) and "prompt" in normalized_metadata and "extra" in normalized_metadata:
+        result = normalized_metadata
+    else:
+        result = _gi_to_a1111_format(normalized_metadata)
+
+    result["_is_comfyui"] = normalized_metadata.get("_is_comfyui", False)
+    result["_workflow"] = normalized_metadata.get("_workflow")
+    result["_format_name"] = detected_format_name
+
+    return result
+
+
+def _gi_read_exif_user_comment_bytes(exif_bytes):
+    """Best-effort extraction of the EXIF UserComment string from raw EXIF bytes, via piexif."""
+    if not exif_bytes:
+        return None
+    try:
+        exif = piexif.load(exif_bytes)
+    except Exception:
+        return None
+    exif_comment = (exif or {}).get("Exif", {}).get(piexif.ExifIFD.UserComment, b"")
+    if not exif_comment:
+        return None
+    try:
+        return piexif.helper.UserComment.load(exif_comment)
+    except ValueError:
+        try:
+            return exif_comment.decode("utf8", errors="ignore") or None
+        except Exception:
+            return None
+
+
+def _gi_build_raw_metadata(image: Image.Image) -> tuple[dict, str]:
+    """Build a lowercase-keyed metadata field dict (as epd.py's per-format
+    extractors would produce) from a PIL Image already loaded into memory,
+    plus a normalized file_type string ('png' / 'jpg' / 'webp' / other).
+    """
+    info = (image.info or {}).copy()
+
+    fmt = (image.format or "").upper()
+    if fmt in ("JPEG", "JPG", "MPO"):
+        file_type = "jpg"
+    elif fmt == "WEBP":
+        file_type = "webp"
+    elif fmt == "PNG":
+        file_type = "png"
+    else:
+        file_type = "png"
+
+    raw_metadata = {}
+    for key, value in info.items():
+        raw_metadata[str(key).lower()] = value
+
+    # Supplement with the EXIF UserComment, which PIL exposes only as raw
+    # bytes under "exif" rather than as a decoded string field.
+    if "user_comment" not in raw_metadata and "exif" in info:
+        decoded = _gi_read_exif_user_comment_bytes(info["exif"])
+        if decoded:
+            raw_metadata["user_comment"] = decoded
+
+    return raw_metadata, file_type
+
+
+def _gi_looks_like_unparsed_json(value) -> bool:
+    """True if value is a string that looks like a raw JSON object/array
+    rather than human-readable generation-parameters text. Used to detect
+    cases like a PNG "comment" field holding NovelAI-style JSON, which the
+    legacy GIF-comment branch would otherwise treat as final geninfo text
+    instead of letting the multi-format detector parse it properly.
+    """
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip()
+    if not stripped:
+        return False
+    return (stripped.startswith("{") and stripped.endswith("}")) or (stripped.startswith("[") and stripped.endswith("]"))
+
+
 def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
     """Read generation info from an image, checking standard metadata first, then stealth info if needed."""
 
@@ -808,6 +1613,7 @@ def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
         items = (image.info or {}).copy()
 
         geninfo = items.pop("parameters", None)
+        geninfo_is_unparsed = _gi_looks_like_unparsed_json(geninfo)
 
         if "exif" in items:
             exif_data = items["exif"]
@@ -824,11 +1630,19 @@ def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
 
             if exif_comment:
                 geninfo = exif_comment
+                # An EXIF UserComment holding raw JSON (ComfyUI/NovelAI/etc.)
+                # is not finished geninfo text; let the extended detector
+                # below parse it properly instead of dumping the raw JSON.
+                geninfo_is_unparsed = _gi_looks_like_unparsed_json(geninfo)
         elif "comment" in items:  # for gif
             if isinstance(items["comment"], bytes):
                 geninfo = items["comment"].decode("utf8", errors="ignore")
             else:
                 geninfo = items["comment"]
+            # A "comment" field holding raw JSON (e.g. NovelAI-style metadata)
+            # is not actually finished geninfo text; flag it so the extended
+            # detector below gets a chance to parse it properly instead.
+            geninfo_is_unparsed = _gi_looks_like_unparsed_json(geninfo)
 
         for field in IGNORED_INFO_KEYS:
             items.pop(field, None)
@@ -841,14 +1655,50 @@ def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
                 geninfo = f"""{items["Description"]}
     Negative prompt: {json_info["uc"]}
     Steps: {json_info["steps"]}, Sampler: {sampler}, CFG scale: {json_info["scale"]}, Seed: {json_info["seed"]}, Size: {image.width}x{image.height}, Clip skip: 2, ENSD: 31337"""
+                geninfo_is_unparsed = False
             except Exception:
                 errors.report("Error parsing NovelAI image generation parameters", exc_info=True)
 
-        return geninfo, items
+        return geninfo, items, geninfo_is_unparsed
 
-    geninfo, items = read_standard()
+    geninfo, items, geninfo_is_unparsed = read_standard()
+
+    # If the standard A1111/Forge-native path (PNG "parameters" text chunk,
+    # EXIF UserComment, GIF comment, or NovelAI Software/Comment combo)
+    # didn't yield anything usable, fall back to the broader multi-format
+    # detector ported from epd.py: ComfyUI, NovelAI (JSON-only variants),
+    # SwarmUI, Fooocus, InvokeAI, DrawThings, Midjourney, DAVANT,
+    # CivitAI-tagged parameters, and generic A1111-style text it didn't
+    # already catch.
+    if not geninfo or geninfo_is_unparsed:
+        try:
+            raw_metadata, file_type = _gi_build_raw_metadata(image)
+            normalized = _gi_convert_to_a1111_metadata(raw_metadata, file_type)
+        except Exception:
+            normalized = None
+            errors.report("Error running extended generation-metadata detection", exc_info=True)
+
+        if normalized:
+            prompt = normalized.get("prompt", "")
+            negative = normalized.get("negative", "")
+            extra = normalized.get("extra", "")
+
+            parts = []
+            if prompt:
+                parts.append(prompt)
+            if negative:
+                parts.append(f"{NEGATIVE_PREFIX}{negative}")
+            if extra:
+                parts.append(extra)
+
+            if parts:
+                geninfo = "\n".join(parts)
+        # else: detector found nothing better; keep whatever geninfo was
+        # already determined (including raw unparsed text), matching prior
+        # fall-back behavior of never discarding a non-empty value.
 
     return geninfo, items
+
 
 
 def image_data(data):
