@@ -325,7 +325,7 @@ class ExtraNetworksPage:
             preview_count = 1 if preview else 0
         
 
-        background_image = f'<img src="{html.escape(preview)}" class="preview" loading="lazy">' if preview else ''
+        background_image = f'<img src="{html.escape(preview)}" class="preview" loading="lazy" {preview_data_attr}>' if preview else ''
 
         onclick = item.get("onclick", None)
         if onclick is None:  # Textual Inversion / LoRA

@@ -1,0 +1,524 @@
+{
+  "Mikasa Ackerman coming out of shower white towel\\001.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic,indoors, bathroom,,\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair towel, towel only, towel around torso, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, \n\nsteam, steamy, after shower, wet, closed eyes, coming out of the shower, dutch angle,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration,, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\001.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1178633599,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 768,
+    "height": 1152,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\002.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic,indoors, bathroom,,\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair white towel, towel only, towel around torso, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, \n\nsteam, steamy, wet, wet body, closed mouth, from above, looking at other side, adjusting hair,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\002.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2286993265,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\003.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic,indoors, bathroom,\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair white towel, towel only, towel around torso, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, \n\nwet, wet body, , from below, looking down, ass focus, pussy, female pubic hair, detailed pussy, plump pussy,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\003.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 896046915,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\004.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair towel, nude, naked, flashing, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin,  huge nipples,\n\nwet, wet body, dutch angle, blushing, pussy, female pubic hair, detailed pussy, plump pussy,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\004.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 867320890,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\005.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, shiny skin,, huge nipples,\n\nwet, wet body, blushing, front view, upperbody, face focus, face close-up\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, throbbing, penis awe, penis over eyes, foreskin, uncircumcised penis,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\005.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1599097866,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\006.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked,  shiny skin,\n\nwet, wet body, blushing, side view, upperbody, face focus, face close-up\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, blowjob, oral sex, fellatio, penis in mouth,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\006.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1897655443,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\007.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked,gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin,  huge nipples,\n\nwet, wet body, below view, dutch angle, low angle, kneeling, sitting, female pubic hair, trembling, female orgasm, squirting, narrowed eyes,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, blowjob, oral sex, fellatio, penis in mouth, hugging another's legs, deepthroat, throat bulge,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\007.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 3230474238,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\008.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked,gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, huge nipples,\n\nwet, wet body, below view, dutch angle, low angle, kneeling, sitting, female pubic hair, trembling, female orgasm, squirting,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, blowjob, oral sex, fellatio, penis in mouth, hugging another's legs, deepthroat, throat bulge, face fucking,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, lactating  score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\008.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2227858926,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\009.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, \n\nwet, wet body, from above, rolling eyes, blushing,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, blowjob, oral sex, fellatio, penis in mouth, deepthroat, throat bulge, face fucking, head grab, cum, cum in mouth, excessive cum, covered in cum,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\009.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2591326197,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\010.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, erect nipples, ass, bubble butt,\n\nwet, wet body, blushing, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, foreskin, uncircumcised penis, (motion blur, motion lines, front angle,), paizuri, paizuri on lap, precum, throbbing, assertive female, upper body focus, pov, grabbing own breasts, squeezing breasts together,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\010.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1455984737,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\011.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, erect nipples, ass, bubble butt,\n\nwet, wet body, blushing, nervous, closed mouth,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, foreskin, uncircumcised penis, (motion blur, motion lines, front angle, from above,), paizuri, paizuri on lap, precum, throbbing, assertive female, upper body focus, pov, grabbing own breasts, squeezing breasts together,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\011.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2868764521,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\012.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, erect nipples, ass, bubble butt,\n\nwet, wet body, blushing, nervous, closed mouth, narrowed eyes, musk, musk clouds,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, foreskin, uncircumcised penis, (motion blur, motion lines, dutch angle, from above,), paizuri, paizuri on lap, precum, throbbing, assertive female, upper body focus, pov, grabbing own breasts, squeezing breasts together,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\012.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1001976759,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\013.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, erect nipples, ass, bubble butt,\n\nwet, wet body, blushing, nervous, closed mouth, :o, open mouth, !, one eye closed, musk, musk clouds,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, foreskin, uncircumcised penis, (motion blur, motion lines, side angle, from above,), paizuri, paizuri on lap, precum, throbbing, assertive female, upper body focus, pov, grabbing own breasts, squeezing breasts together, cum, cumshot, cum in face, cum in breasts, excessive cum, covered in cum, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\013.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2607256157,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\014.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nwet, wet body, blushing, hands above head, hands together,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, nervous, open mouth, from below, dutch angle,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2), (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, penis between thighs, imminent sex, grabbing another's wrists, holding another's wrist, grabbing from behind, foreskin, uncircumcised penis,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\014.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 848131209,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\015.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nwet, wet body, blushing, hands above head, hands together,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, :o, half-closed eye, !, open mouth, from side,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, grabbing another's wrists, holding another's wrist, grabbing from behind, sex, standing sex, vaginal sex, stomach bulge,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\015.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 853465707,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\016.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nwet, wet body, blushing, hands above head, hands together,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, :o, half-closed eye, !, open mouth, front view, dutch angle,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, grabbing another's wrists, holding another's wrist, grabbing from behind, sex, standing sex, vaginal sex, stomach bulge,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\016.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 1553798090,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\017.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nwet, wet body, blushing, hands above head, hands together,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, above view, dutch angle, bowlegged pose, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, grabbing another's wrists, holding another's wrist, grabbing from behind, sex, standing sex, vaginal sex, stomach bulge,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\017.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2093848463,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\018.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nwet, wet body, blushing, hands above head, hands together,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, above view, dutch angle, bowlegged pose, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, grabbing another's wrists, holding another's wrist, grabbing from behind, sex, standing sex, vaginal sex, stomach bulge,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\018.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2661724896,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\019.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples, collarbone\n\nlying, lying on bed, lying on back, spread legs, wet, wet body, blushing, musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, smile, ahegao, open mouth, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, sex, missionary sex, vaginal sex, stomach bulge, motion lines, motion blur,  pov, dutch angle, grabbing another's thighs,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\019.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 3198413912,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\020.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples, collarbone\n\nlying, lying on bed, lying on back, spread legs, wet, wet body, blushing, musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, smile, ahegao, open mouth, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, sex, missionary sex, vaginal sex, stomach bulge, motion lines, motion blur, from side,, grabbing another's thighs,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\020.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 3367752009,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\021.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, shiny skin, gigantic ass, , thick thighs, shiny skin, \n\nlying, lying on bed, lying on back, spread legs, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, \n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, sex, mating press sex, vaginal sex, stomach bulge, motion lines, motion blur, from below, ass, ass focus, anus,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\021.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 3583009482,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1152,
+    "height": 768,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\022.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, :o\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, stomach bulge, motion lines, motion blur,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\022.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 4159911088,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\023.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, :o\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, stomach bulge, motion lines, motion blur, from below, side angle, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\023.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2845282350,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\024.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, :o\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2.5), bald male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, stomach bulge, motion lines, motion blur, from above,  side angle, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\024.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 4268741406,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\025.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, smile, tongue out,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, motion lines, motion blur, from below, cum, cum in pussy, excessive cum, covered in cum, cum inflation, bloated belly,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\025.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2067261189,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\026.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, smile, tongue out,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male:2), bald male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, motion lines, motion blur, from side, cum, cum in pussy, excessive cum, covered in cum, cum inflation, bloated belly,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\026.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 229279604,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\027.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, gigantic ass, curvy, thick thighs, shiny skin, chubby female, huge nipples,\n\nfull nelson, wet, wet body,  musk, musk clouds, pussy, detailed pussy, plump pussy, female pubic hair, ahegao, open mouth, smile, tongue out,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, (faceless male), bald male, penis, gigantic penis, veiny penis, sex, full nelson sex, vaginal sex, motion lines, motion blur, from above, dutch angle, cum, cum in pussy, excessive cum, covered in cum, cum inflation, bloated belly,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\027.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 3157134438,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\028.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, shiny skin, huge nipples, navel,\n\nlying on bed, wet, wet body,  musk, musk clouds, open mouth, smile, tongue out,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, dutch angle, cum, cum in body, excessive cum, covered in cum, cum in face, penis over eyes, face focus, face close-up, peace sign,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\028.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2555491707,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  },
+  "Mikasa Ackerman coming out of shower white towel\\029.png": {
+    "prompt": "masterpiece, best quality, score_7, best quality, depth of field, high detail, very aesthetic, indoors, bedroom, night,, in the dark\n\n1girl, solo, power_girl_(dc)_fontezstyle, blue eyes, natural pink lips, blonde hair, pixie cut, hair between eyes, asymmetrical sidelocks, very short hair nude, naked, gigantic breasts, shiny skin, huge nipples, navel,\n\nlying on bed, on back, wet, wet body,  musk, musk clouds, open mouth, smile, tongue out,\n\n1boy, dark-skinned male, very dark skin, interracial, toned male, penis, gigantic penis, veiny penis, dutch angle, cum, cum in body, excessive cum, covered in cum, cum in face, penis over eyes, face focus, face close-up, peace sign,, <lora:fontezstyleC14Ani:1> ",
+    "negative": "worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst quality, low quality, score_1, score_2, score_3, artist name, blurry, jpeg artifacts, 2boys, multiple boys, chromatic aberration, worst detail, sketch, censor, text, speech bubbles,  SmoothNegative_Hands, SmoothNegative_Hands-neg,, simple background, white background,",
+    "file_path": "D:\\.Metadata\\0.prompt_manager\\input\\Mikasa Ackerman coming out of shower white towel\\029.png",
+    "steps": 30,
+    "sampler": "Euler a",
+    "cfg_scale": 4,
+    "seed": 2675535643,
+    "model": "waiIllustriousSDXL_v170",
+    "width": 1024,
+    "height": 1024,
+    "civitai_urls": {
+      "model": null,
+      "loras": {},
+      "vae": null
+    },
+    "_is_comfyui": false
+  }
+}
