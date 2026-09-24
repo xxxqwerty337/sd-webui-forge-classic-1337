@@ -1,4 +1,4 @@
-# reference: https://github.com/Comfy-Org/ComfyUI/blob/v0.26.1/comfy/supported_models.py
+# reference: https://github.com/Comfy-Org/ComfyUI/blob/v0.27.1/comfy/supported_models.py
 
 from enum import Enum
 
@@ -104,7 +104,6 @@ class SD15(BASE):
         "model_channels": 320,
         "use_linear_in_transformer": False,
         "adm_in_channels": None,
-        "use_temporal_attention": False,
     }
 
     unet_extra_config = {
@@ -158,7 +157,6 @@ class SDXLRefiner(BASE):
         "context_dim": 1280,
         "adm_in_channels": 2560,
         "transformer_depth": [0, 0, 4, 4, 4, 4, 0, 0],
-        "use_temporal_attention": False,
     }
 
     latent_format = latent.SDXL
@@ -193,7 +191,6 @@ class SDXL(BASE):
         "transformer_depth": [0, 0, 2, 2, 10, 10],
         "context_dim": 2048,
         "adm_in_channels": 2816,
-        "use_temporal_attention": False,
     }
 
     latent_format = latent.SDXL
@@ -314,6 +311,9 @@ class FluxSchnell(Flux):
 
     supported_inference_dtypes = [torch.bfloat16, torch.float32]
 
+    def model_type(self, state_dict):
+        return ModelType.FLOW
+
 
 class Flux2K4B(Flux):
     huggingface_repo = "black-forest-labs/FLUX.2-klein-4B"
@@ -336,9 +336,6 @@ class Flux2K4B(Flux):
 
     vae_key_prefix = ["vae."]
     text_encoder_key_prefix = ["text_encoders."]
-
-    def model_type(self, state_dict):
-        return ModelType.FLOW
 
     def clip_target(self, state_dict={}):
         return {"qwen3_4b.transformer": "text_encoder"}
@@ -365,9 +362,6 @@ class Flux2K9B(Flux):
 
     vae_key_prefix = ["vae."]
     text_encoder_key_prefix = ["text_encoders."]
-
-    def model_type(self, state_dict):
-        return ModelType.FLOW
 
     def clip_target(self, state_dict={}):
         return {"qwen3_8b.transformer": "text_encoder"}
@@ -566,6 +560,9 @@ class QwenImage(BASE):
         else:
             return {"qwen25_7b": "text_encoder"}
 
+    def model_type(self, state_dict):
+        return ModelType.FLUX
+
 
 class Krea2(BASE):
     huggingface_repo = "krea/Krea-2-Raw"
@@ -592,6 +589,9 @@ class Krea2(BASE):
 
     def clip_target(self, state_dict={}):
         return {"qwen3vl_4b.transformer": "text_encoder"}
+
+    def model_type(self, state_dict):
+        return ModelType.FLUX
 
 
 class ErnieImage(BASE):

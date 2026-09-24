@@ -415,11 +415,8 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
         self.slider_preferred_weight = gr.Slider(label="Preferred weight", info="Set to 0 to disable", minimum=0.0, maximum=2.0, step=0.01)
         self.edit_negative_text = gr.Text(label="Negative prompt", info="Will be added to negative prompts")
         with gr.Row() as row_random_prompt:
-            with gr.Column(scale=8):
-                random_prompt = gr.Textbox(label="Random prompt", lines=4, max_lines=4, interactive=False)
-
-            with gr.Column(scale=1, min_width=120):
-                generate_random_prompt = gr.Button("Generate", size="lg", scale=1)
+            random_prompt = gr.Textbox(label="Random Prompt", lines=4, max_lines=4, interactive=False, scale=9)
+            generate_random_prompt = gr.Button("Generate", size="lg", scale=1)
 
         self.edit_notes = gr.TextArea(label="Notes", lines=4)
         self.checkbox_pinned = gr.Checkbox(label="Pinned", value=False)  # ADD THIS LINE
@@ -434,7 +431,7 @@ class LoraUserMetadataEditor(ui_extra_networks_user_metadata.UserMetadataEditor)
                 words = [x for x in words if x != tag and x.strip()]
                 return ", ".join(words)
 
-            return activation_text + ", " + tag if activation_text else tag
+            return (activation_text + ", " + tag) if activation_text else tag
 
         self.taginfo.select(fn=select_tag, inputs=[self.edit_activation_text], outputs=[self.edit_activation_text], show_progress=False)
 

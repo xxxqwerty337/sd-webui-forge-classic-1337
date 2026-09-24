@@ -9,13 +9,14 @@ import torch.nn as nn
 
 from backend.memory_management import pytorch_attention_enabled
 
-if pytorch_attention_enabled:
+if pytorch_attention_enabled():
     from backend.attention import attention_pytorch as attention_function
 else:
     from backend.attention import attention_basic as attention_function
 
 from backend.nn.anima import LLMAdapter
 from backend.nn.llm import qwen_vl
+from backend.quant_ops import ck
 
 
 @dataclass
@@ -208,23 +209,33 @@ def precompute_freqs_cis(head_dim, position_ids, theta, rope_scale=None, rope_di
     return out
 
 
+def rope_matrix(freqs_cis):
+    if torch.is_tensor(freqs_cis):
+        return freqs_cis
+    cos, sin, neg_sin = freqs_cis
+    half = sin.shape[-1]
+    matrix = torch.stack((cos[..., :half], neg_sin, sin, cos[..., half:]), dim=-1)
+    return matrix.reshape(*matrix.shape[:-1], 2, 2)
+
+
 def apply_rope(xq, xk, freqs_cis):
-    org_dtype = xq.dtype
-    cos = freqs_cis[0]
-    sin = freqs_cis[1]
-    nsin = freqs_cis[2]
+    matrix = rope_matrix(freqs_cis)
+    if matrix.ndim == 5:
+        matrix = matrix.unsqueeze(0)
 
-    q_embed = xq * cos
-    q_split = q_embed.shape[-1] // 2
-    q_embed[..., :q_split].addcmul_(xq[..., q_split:], nsin)
-    q_embed[..., q_split:].addcmul_(xq[..., :q_split], sin)
+    q_ndim, k_ndim = xq.ndim, xk.ndim
+    if q_ndim == 3:
+        xq = xq.unsqueeze(0)
+    if k_ndim == 3:
+        xk = xk.unsqueeze(0)
 
-    k_embed = xk * cos
-    k_split = k_embed.shape[-1] // 2
-    k_embed[..., :k_split].addcmul_(xk[..., k_split:], nsin)
-    k_embed[..., k_split:].addcmul_(xk[..., :k_split], sin)
+    xq, xk = ck.apply_rope_split_half(xq, xk, matrix)
+    if q_ndim == 3:
+        xq = xq.squeeze(0)
+    if k_ndim == 3:
+        xk = xk.squeeze(0)
 
-    return q_embed.to(org_dtype), k_embed.to(org_dtype)
+    return xq, xk
 
 
 class Attention(nn.Module):
@@ -295,10 +306,8 @@ class Attention(nn.Module):
             else:
                 present_key_value = (xk, xv, index + num_tokens)
 
-        xk = xk.repeat_interleave(self.num_heads // self.num_kv_heads, dim=1)
-        xv = xv.repeat_interleave(self.num_heads // self.num_kv_heads, dim=1)
-
-        output = optimized_attention(xq, xk, xv, self.num_heads, mask=attention_mask, skip_reshape=True)
+        gqa_kwargs = {"enable_gqa": True} if self.num_heads != self.num_kv_heads else {}
+        output = optimized_attention(xq, xk, xv, self.num_heads, mask=attention_mask, skip_reshape=True, **gqa_kwargs)
         return self.o_proj(output), present_key_value
 
 
@@ -442,7 +451,7 @@ class Llama2_(nn.Module):
         if embeds is not None:
             x = embeds
         else:
-            x = self.embed_tokens(x, out_dtype=dtype)
+            x = self.embed_tokens(x).to(dtype=dtype)
 
         if self.normalize_in:
             x *= self.config.hidden_size**0.5
