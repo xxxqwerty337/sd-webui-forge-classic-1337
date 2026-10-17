@@ -126,11 +126,11 @@ function setupExtraNetworksForTab(tabname) {
                     // STEP 1: Sort by pinned status first (pinned comes before unpinned)
                     let pinnedA = parseInt(cardA.dataset.sortPinned) || 0;
                     let pinnedB = parseInt(cardB.dataset.sortPinned) || 0;
-                    
+
                     if (pinnedA !== pinnedB) {
                         return pinnedB - pinnedA;  // Higher value (1=pinned) comes first
                     }
-                    
+
                     // STEP 2: If both have same pin status, use current sort field
                     let a = cardA.dataset[sortKeyDataField];
                     let b = cardB.dataset[sortKeyDataField];
@@ -301,17 +301,72 @@ function tryToRemoveExtraNetworkFromPrompt(textarea, text, isNeg) {
     return false;
 }
 
-function updatePromptArea(text, textArea, isNeg) {
+// ============================================================================
+// INSERT AT HIGHLIGHTED TEXT (LoRA only)
+// ============================================================================
+
+/** True for LoRA cards; highlight-to-insert only applies to these. */
+function extraNetworksIsLora(textToAdd) {
+    return /^<lora:/i.test(textToAdd);
+}
+
+/**
+ * The highlighted range in a prompt textarea, or null when nothing is highlighted.
+ * A plain cursor position (no highlight) deliberately returns null, so clicks append as usual.
+ * Must be read before the textarea's value is changed.
+ */
+function extraNetworksGetSelection(textarea) {
+    if (!textarea) return null;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    if (typeof start !== "number" || typeof end !== "number" || start === end) return null;
+
+    return { start: Math.min(start, end), end: Math.max(start, end) };
+}
+
+/** Replace the highlighted range with `text` exactly (no separators added), then put the cursor after it. */
+function extraNetworksReplaceSelection(textarea, selection, text) {
+    const value = textarea.value;
+    textarea.value = value.slice(0, selection.start) + text + value.slice(selection.end);
+
+    // Collapse the highlight so the next click doesn't replace anything by accident
+    const caret = selection.start + text.length;
+    if (typeof textarea.setSelectionRange === "function") {
+        textarea.setSelectionRange(caret, caret);
+    }
+}
+
+/**
+ * Add `text` to the prompt: over the highlighted text if there is a highlight,
+ * otherwise appended at the end with the usual separator.
+ */
+function extraNetworksAddToPrompt(textarea, text, selection) {
+    if (selection) {
+        extraNetworksReplaceSelection(textarea, selection, text);
+    } else {
+        textarea.value = textarea.value + opts.extra_networks_add_text_separator + text;
+    }
+}
+
+function updatePromptArea(text, textArea, isNeg, useSelection) {
+    // Read the highlight before anything changes the textarea
+    const selection = useSelection ? extraNetworksGetSelection(textArea) : null;
+
     if (!tryToRemoveExtraNetworkFromPrompt(textArea, text, isNeg)) {
-        textArea.value = textArea.value + opts.extra_networks_add_text_separator + text;
+        extraNetworksAddToPrompt(textArea, text, selection);
     }
 
     updateInput(textArea);
 }
 
-function cardClicked(tabname, textToAdd, textToAddNegative, allowNegativePrompt) {
+// Original card click behaviour: toggle the LoRA tag + default activation text.
+// For LoRAs, adding goes over highlighted text when there is any.
+function cardClickedDefault(tabname, textToAdd, textToAddNegative, allowNegativePrompt) {
+    const useSelection = extraNetworksIsLora(textToAdd);
+
     if (textToAddNegative.length > 0) {
-        updatePromptArea(textToAdd, gradioApp().querySelector("#" + tabname + "_prompt > label > textarea"));
+        updatePromptArea(textToAdd, gradioApp().querySelector("#" + tabname + "_prompt > label > textarea"), false, useSelection);
         updatePromptArea(
             textToAddNegative,
             gradioApp().querySelector("#" + tabname + "_neg_prompt > label > textarea"),
@@ -321,8 +376,179 @@ function cardClicked(tabname, textToAdd, textToAddNegative, allowNegativePrompt)
         let textarea = allowNegativePrompt
             ? activePromptTextarea[tabname]
             : gradioApp().querySelector("#" + tabname + "_prompt > label > textarea");
-        updatePromptArea(textToAdd, textarea);
+        updatePromptArea(textToAdd, textarea, false, useSelection);
     }
+}
+
+// ============================================================================
+// PER-PREVIEW ACTIVATION TEXT
+// ============================================================================
+
+/**
+ * Read the per-preview activation texts for the card that was clicked.
+ * Returns {texts: [...], index: n} or null when the card has none (or the click came from the tree view).
+ */
+function extraNetworksGetPreviewTextsInfo(elem) {
+    if (!elem || !elem.closest) return null;
+
+    const card = elem.closest(".card");
+    if (!card) return null;
+
+    const img = card.querySelector("img.preview");
+    if (!img) return null;
+
+    const raw = img.getAttribute("data-preview-activation-texts");
+    if (!raw) return null;
+
+    let texts;
+    try {
+        texts = JSON.parse(raw);
+    } catch (e) {
+        console.error("Could not read per-preview activation texts:", e);
+        return null;
+    }
+
+    if (!Array.isArray(texts)) return null;
+
+    texts = texts.map((t) => (typeof t === "string" ? t.trim() : ""));
+    if (!texts.some((t) => t)) return null;
+
+    const index = parseInt(img.getAttribute("data-current-preview-index") || "0", 10) || 0;
+
+    return { texts: texts, index: index };
+}
+
+/** True when the prompt contains a <lora:name:weight> tag for netKey (e.g. "lora:my_style"), any weight. */
+function extraNetworksPromptHasNet(text, netKey) {
+    const found = text.match(re_extranet_g) || [];
+    return found.some(function (tag) {
+        const m = tag.match(re_extranet);
+        return m && m[1] == netKey;
+    });
+}
+
+/**
+ * Remove one activation text from the prompt.
+ * Prefers the copy directly after this LoRA's tag ("<lora:x:1> text"),
+ * otherwise removes "<separator>text", otherwise the first plain "text".
+ */
+function extraNetworksRemoveTextFromPrompt(textarea, text, netKey) {
+    let value = textarea.value;
+    const tagRegex = new RegExp(re_extranet_g.source, "g");
+    let m;
+
+    while ((m = tagRegex.exec(value)) !== null) {
+        if (m[1] != netKey) continue;
+
+        const end = m.index + m[0].length;
+        if (value.substr(end, text.length + 1) == " " + text) {
+            textarea.value = value.slice(0, end) + value.slice(end + text.length + 1);
+            return true;
+        }
+    }
+
+    const separator = opts.extra_networks_add_text_separator;
+    let pos = value.indexOf(separator + text);
+    if (pos >= 0) {
+        textarea.value = value.slice(0, pos) + value.slice(pos + separator.length + text.length);
+        return true;
+    }
+
+    pos = value.indexOf(text);
+    if (pos >= 0) {
+        textarea.value = value.slice(0, pos) + value.slice(pos + text.length);
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Card click.
+ *
+ * Without per-preview texts this is exactly the original behaviour.
+ *
+ * With per-preview texts, the text for the preview currently showing is toggled:
+ *  - LoRA not in the prompt yet: add "<lora:x:w> text" (same as the normal click).
+ *  - LoRA already in the prompt, text not there: add the text (the tag is not added again).
+ *  - Text already there: remove it. The tag is removed too once none of this
+ *    LoRA's texts (per-preview or default) are left in the prompt.
+ * A preview without its own text uses the default activation text the same way.
+ */
+function cardClicked(tabname, textToAdd, textToAddNegative, allowNegativePrompt, elem) {
+    const info = extraNetworksGetPreviewTextsInfo(elem);
+    const tagMatch = info ? textToAdd.match(/^(<([^:^>]+:[^:]+):[\d.]+>)([\s\S]*)$/) : null;
+
+    if (!info || !tagMatch) {
+        cardClickedDefault(tabname, textToAdd, textToAddNegative, allowNegativePrompt);
+        return;
+    }
+
+    const tag = tagMatch[1];
+    const netKey = tagMatch[2];
+    const defaultText = tagMatch[3].trim();
+    const hasNegative = textToAddNegative.length > 0;
+    const separator = opts.extra_networks_add_text_separator;
+
+    const promptTextarea = gradioApp().querySelector("#" + tabname + "_prompt > label > textarea");
+    const negTextarea = gradioApp().querySelector("#" + tabname + "_neg_prompt > label > textarea");
+    const textarea = hasNegative || !allowNegativePrompt ? promptTextarea : activePromptTextarea[tabname];
+
+    const customTexts = info.texts.filter((t) => t);
+    const currentText = info.texts[info.index] || "";
+    const tagPresent = extraNetworksPromptHasNet(textarea.value, netKey);
+    const customPresent = tagPresent && customTexts.some((t) => textarea.value.includes(t));
+
+    // Preview with no text of its own, and none of the per-preview texts in the prompt: normal behaviour
+    if (!currentText && !customPresent) {
+        cardClickedDefault(tabname, textToAdd, textToAddNegative, allowNegativePrompt);
+        return;
+    }
+
+    const textToToggle = currentText || defaultText;
+
+    // Highlighted text in the prompt (read before anything changes it)
+    const selection = extraNetworksGetSelection(textarea);
+
+    // LoRA not in the prompt yet: add tag + this preview's text (over the highlight if there is one)
+    if (!tagPresent) {
+        extraNetworksAddToPrompt(textarea, tag + (textToToggle ? " " + textToToggle : ""), selection);
+        updateInput(textarea);
+
+        if (hasNegative && negTextarea && !negTextarea.value.includes(textToAddNegative)) {
+            negTextarea.value = negTextarea.value + separator + textToAddNegative;
+            updateInput(negTextarea);
+        }
+        return;
+    }
+
+    let removeTag = false;
+
+    if (!textToToggle) {
+        // Nothing to toggle for this preview: behave like the normal click and remove the LoRA
+        removeTag = true;
+    } else if (textarea.value.includes(textToToggle)) {
+        // Second click on the same preview: remove its text
+        extraNetworksRemoveTextFromPrompt(textarea, textToToggle, netKey);
+
+        const otherTexts = customTexts.concat(defaultText ? [defaultText] : []).filter((t) => t !== textToToggle);
+        removeTag = !otherTexts.some((t) => textarea.value.includes(t));
+    } else {
+        // LoRA already in the prompt from another preview: the tag stays where it is,
+        // just add this preview's text (over the highlight if there is one)
+        extraNetworksAddToPrompt(textarea, textToToggle, selection);
+    }
+
+    if (removeTag) {
+        tryToRemoveExtraNetworkFromPrompt(textarea, tag, false);
+
+        if (hasNegative && negTextarea) {
+            tryToRemoveExtraNetworkFromPrompt(negTextarea, textToAddNegative, true);
+            updateInput(negTextarea);
+        }
+    }
+
+    updateInput(textarea);
 }
 
 function saveCardPreview(event, tabname, filename) {
@@ -724,6 +950,27 @@ function extraNetworksRequestMetadata(event, extraPage) {
 
 let extraPageUserMetadataEditors = {};
 
+// Tooltips for the icon-only buttons under the preview in the edit modal
+const extraNetworksMiniButtonTitles = {
+    "mini-btn-prev": "Previous preview",
+    "mini-btn-next": "Next preview",
+    "mini-btn-cancel": "Cancel",
+    "mini-btn-fetch": "Fetch from CivitAI",
+    "mini-btn-add": "Add from generated",
+    "mini-btn-delete": "Delete this preview",
+    "mini-btn-save": "Save",
+};
+
+function extraNetworksSetMiniButtonTitles(container) {
+    if (!container) return;
+    Object.keys(extraNetworksMiniButtonTitles).forEach(function (cls) {
+        container.querySelectorAll("." + cls).forEach(function (el) {
+            el.title = extraNetworksMiniButtonTitles[cls];
+            el.setAttribute("aria-label", extraNetworksMiniButtonTitles[cls]);
+        });
+    });
+}
+
 function extraNetworksEditUserMetadata(event, tabname, extraPage) {
     let id = tabname + "_" + extraPage + "_edit_user_metadata";
 
@@ -747,6 +994,8 @@ function extraNetworksEditUserMetadata(event, tabname, extraPage) {
     editor.button.click();
 
     popup(editor.page);
+
+    extraNetworksSetMiniButtonTitles(editor.page);
 
     event.stopPropagation();
 }
@@ -778,21 +1027,21 @@ function extraNetworksRefreshSingleCard(page, tabname, name) {
 function extraNetworksRefreshMultipleCards(page, tabname, namesJson) {
     try {
         const names = JSON.parse(namesJson);
-        
+
         if (!names || names.length === 0) {
             console.log('No cards to refresh');
             return;
         }
-        
+
         console.log(`Refreshing ${names.length} cards:`, names);
-        
+
         // Refresh each card individually
         let refreshed = 0;
         names.forEach(function(name) {
             setTimeout(function() {
                 extraNetworksRefreshSingleCard(page, tabname, name);
                 refreshed++;
-                
+
                 // Re-apply filters after all cards are refreshed
                 if (refreshed === names.length) {
                     console.log(`All ${names.length} cards refreshed, re-applying filters...`);
@@ -802,7 +1051,7 @@ function extraNetworksRefreshMultipleCards(page, tabname, namesJson) {
                 }
             }, refreshed * 100); // Stagger requests by 100ms
         });
-        
+
     } catch (e) {
         console.error('Error refreshing multiple cards:', e);
     }
@@ -821,9 +1070,9 @@ function extraNetworksRefreshMultipleCards(page, tabname, namesJson) {
 window.navigatePreview = function(event, direction) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     console.log('navigatePreview called with direction:', direction);
-    
+
     // Get the card element
     const button = event.currentTarget;
     const card = button.closest('.card');
@@ -831,14 +1080,14 @@ window.navigatePreview = function(event, direction) {
         console.error('navigatePreview: Could not find card element');
         return;
     }
-    
+
     // Get the image element
     const img = card.querySelector('img.preview');
     if (!img) {
         console.error('navigatePreview: Could not find preview image');
         return;
     }
-    
+
     // Get all preview URLs from data attribute
     let previewUrls = [];
     try {
@@ -853,34 +1102,34 @@ window.navigatePreview = function(event, direction) {
         console.error('navigatePreview: Failed to parse preview URLs:', e);
         return;
     }
-    
+
     if (previewUrls.length <= 1) {
         console.log('navigatePreview: Only one preview, nothing to navigate');
         return;
     }
-    
+
     // Get current preview index (stored in data attribute, defaults to 0)
     let currentIndex = parseInt(img.getAttribute('data-current-preview-index') || '0', 10);
     console.log('navigatePreview: Current index:', currentIndex);
-    
+
     // Calculate new index
     currentIndex += direction;
-    
+
     // Wrap around
     if (currentIndex < 0) {
         currentIndex = previewUrls.length - 1;
     } else if (currentIndex >= previewUrls.length) {
         currentIndex = 0;
     }
-    
+
     console.log('navigatePreview: New index:', currentIndex);
-    
+
     // Update image source
     img.src = previewUrls[currentIndex];
-    
+
     // Store new index
     img.setAttribute('data-current-preview-index', currentIndex.toString());
-    
+
     // Update button titles to show current position
     const prevBtn = card.querySelector('.preview-prev-button');
     const nextBtn = card.querySelector('.preview-next-button');
@@ -889,13 +1138,13 @@ window.navigatePreview = function(event, direction) {
         prevBtn.title = `Previous preview (${position})`;
         nextBtn.title = `Next preview (${position})`;
     }
-    
+
     // Update indicator if it exists
     const indicator = card.querySelector('.preview-indicator');
     if (indicator) {
         indicator.textContent = `${currentIndex + 1}/${previewUrls.length}`;
     }
-    
+
     console.log(`navigatePreview: SUCCESS - Navigated to preview ${currentIndex + 1}/${previewUrls.length}`);
 };
 
@@ -906,26 +1155,26 @@ function addPreviewIndicators() {
     document.querySelectorAll('.card').forEach(card => {
         const img = card.querySelector('img.preview');
         if (!img) return;
-        
+
         try {
             const urlsData = img.getAttribute('data-preview-urls');
             if (!urlsData) return;
-            
+
             const previewUrls = JSON.parse(urlsData);
             if (previewUrls.length <= 1) return;
-            
+
             // Check if indicator already exists
             if (card.querySelector('.preview-indicator')) return;
-            
+
             // Create indicator
             const indicator = document.createElement('div');
             indicator.className = 'preview-indicator';
             const currentIndex = parseInt(img.getAttribute('data-current-preview-index') || '0', 10);
             indicator.textContent = `${currentIndex + 1}/${previewUrls.length}`;
-            
+
             // Add to card
             card.appendChild(indicator);
-            
+
         } catch (e) {
             console.error('Failed to add preview indicator:', e);
         }
@@ -939,15 +1188,15 @@ function setupPreviewKeyboardNavigation() {
     document.addEventListener('keydown', function(event) {
         const hoveredCard = document.querySelector('.card:hover');
         if (!hoveredCard) return;
-        
+
         const img = hoveredCard.querySelector('img.preview');
         if (!img || !img.getAttribute('data-preview-urls')) return;
-        
+
         if (event.key === 'ArrowLeft' || event.key === 'Left') {
             event.preventDefault();
             const prevBtn = hoveredCard.querySelector('.preview-prev-button');
             if (prevBtn) {
-                navigatePreview({ 
+                navigatePreview({
                     currentTarget: prevBtn,
                     preventDefault: () => {},
                     stopPropagation: () => {}
@@ -957,7 +1206,7 @@ function setupPreviewKeyboardNavigation() {
             event.preventDefault();
             const nextBtn = hoveredCard.querySelector('.preview-next-button');
             if (nextBtn) {
-                navigatePreview({ 
+                navigatePreview({
                     currentTarget: nextBtn,
                     preventDefault: () => {},
                     stopPropagation: () => {}
@@ -1002,7 +1251,7 @@ onUiLoaded(function () {
             mutationObserver.disconnect();
             executedAfterScripts = true;
             scheduleAfterScriptsCallbacks();
-            
+
             // Initialize preview features
             setTimeout(function() {
                 addPreviewIndicators();
@@ -1026,9 +1275,9 @@ uiAfterScriptsCallbacks.push(setupExtraNetworks);
 function togglePin(tabname, extra_networks_tabname, name, event) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     console.log('Toggling pin for:', name);
-    
+
     // Send request to backend
     const params = new URLSearchParams({
         page: 'Lora',
@@ -1043,17 +1292,17 @@ function togglePin(tabname, extra_networks_tabname, name, event) {
     .then(data => {
         if (data.success) {
             console.log('Pin toggled successfully:', data.pinned);
-            
+
             // Find the card
             const card = event.target.closest('.card');
             if (!card) {
                 console.error('Could not find card element');
                 return;
             }
-            
+
             // Update the data attribute
             card.setAttribute('data-sort-pinned', data.pinned ? '1' : '0');
-            
+
             // Update pin badge appearance
             const pinBadge = card.querySelector('.extra-network-pin-badge');
             if (pinBadge) {
@@ -1065,7 +1314,7 @@ function togglePin(tabname, extra_networks_tabname, name, event) {
                     pinBadge.title = 'Pin to top';
                 }
             }
-            
+
             // Re-sort the cards
             const tabname_full = tabname + '_' + extra_networks_tabname;
             if (extraNetworksApplySort[tabname_full]) {
@@ -1076,7 +1325,7 @@ function togglePin(tabname, extra_networks_tabname, name, event) {
             setTimeout(() => {
                 extraNetworksRefreshSingleCard('Lora', tabname, data.name);
             }, 100);
-            
+
         } else {
             console.error('Failed to toggle pin:', data.error);
         }
@@ -1104,7 +1353,7 @@ function loadSortableJS(callback) {
         callback();
         return;
     }
-    
+
     console.log('Loading Sortable.js from CDN...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
@@ -1127,15 +1376,15 @@ function initializePreviewReorder() {
         console.log('Preview reorder grid not found, skipping initialization');
         return;
     }
-    
+
     // Check if already initialized
     if (grid.sortableInstance) {
         console.log('Preview reorder already initialized');
         return;
     }
-    
+
     console.log('Initializing preview reorder drag-and-drop...');
-    
+
     loadSortableJS(function() {
         try {
             // Initialize Sortable
@@ -1149,34 +1398,34 @@ function initializePreviewReorder() {
                 fallbackClass: 'sortable-fallback',
                 fallbackOnBody: true,
                 swapThreshold: 0.65,
-                
+
                 // Handle dragging
                 onStart: function(evt) {
                     console.log('Started dragging item', evt.oldIndex);
                 },
-                
+
                 // Handle drop
                 onEnd: function(evt) {
                     console.log('Dropped item from', evt.oldIndex, 'to', evt.newIndex);
-                    
+
                     if (evt.oldIndex === evt.newIndex) {
                         console.log('Item dropped in same position, no change');
                         return;
                     }
-                    
+
                     // Update badges after reorder
                     updateReorderBadges();
-                    
+
                     // Capture new order and save to Gradio state
                     captureReorderState();
                 },
             });
-            
+
             // Store instance on grid element
             grid.sortableInstance = sortable;
-            
+
             console.log('Preview reorder initialized successfully');
-            
+
         } catch (error) {
             console.error('Error initializing Sortable:', error);
         }
@@ -1189,7 +1438,7 @@ function initializePreviewReorder() {
 function updateReorderBadges() {
     const grid = document.getElementById('preview-reorder-grid');
     if (!grid) return;
-    
+
     const items = grid.querySelectorAll('.reorder-item');
     items.forEach((item, index) => {
         const badge = item.querySelector('.reorder-badge');
@@ -1203,7 +1452,7 @@ function updateReorderBadges() {
             }
         }
     });
-    
+
     console.log('Updated badges for', items.length, 'items');
 }
 
@@ -1216,39 +1465,39 @@ function captureReorderState() {
         console.error('Cannot capture order: grid not found');
         return;
     }
-    
+
     const items = grid.querySelectorAll('.reorder-item');
     const newOrder = [];
-    
+
     items.forEach((item) => {
         // Get original index from data attribute
         const originalIndex = item.getAttribute('data-original-index') || item.getAttribute('data-index');
         newOrder.push(parseInt(originalIndex, 10));
     });
-    
+
     console.log('Captured new order:', newOrder);
-    
+
     // Find the hidden state component by class or ID
     let stateInput = document.querySelector('.reorder-state-input textarea, .reorder-state-input input');
-    
+
     if (!stateInput) {
         // Fallback: search by ID pattern
         stateInput = document.querySelector('[id*="_reorder_state"] textarea, [id*="_reorder_state"] input');
     }
-    
+
     if (!stateInput) {
         console.error('Could not find reorder state input');
-        
+
         // Try alternative selectors
         const allTextareas = document.querySelectorAll('textarea');
         console.log('All textareas:', allTextareas.length);
-        
+
         // Look for state component near the reorder grid
         const container = grid.closest('.edit-user-metadata');
         if (container) {
             const nearbyStates = container.querySelectorAll('textarea[style*="display: none"]');
             console.log('Found', nearbyStates.length, 'hidden textareas near reorder grid');
-            
+
             if (nearbyStates.length > 0) {
                 // Use the last hidden textarea (likely the reorder state)
                 const stateCandidate = nearbyStates[nearbyStates.length - 1];
@@ -1258,14 +1507,14 @@ function captureReorderState() {
                 return;
             }
         }
-        
+
         return;
     }
-    
+
     // Update the state
     stateInput.value = JSON.stringify(newOrder);
     stateInput.dispatchEvent(new Event('input', { bubbles: true }));
-    
+
     console.log('Updated Gradio state with new order');
 }
 
@@ -1275,41 +1524,41 @@ function captureReorderState() {
  */
 function captureAndReturnReorderState() {
     const grid = document.getElementById('preview-reorder-grid');
-    
+
     if (!grid) {
         console.error('Cannot capture order: grid not found');
         return '[]';
     }
-    
+
     const items = grid.querySelectorAll('.reorder-item');
     if (items.length === 0) {
         console.error('No items found in grid');
         return '[]';
     }
-    
+
     const newOrder = [];
-    
+
     items.forEach((item, currentPosition) => {
         // Get original index from data attribute
         const originalIndex = item.getAttribute('data-original-index') || item.getAttribute('data-index');
         const parsedIndex = parseInt(originalIndex, 10);
-        
+
         if (isNaN(parsedIndex)) {
             console.error('Invalid index on item:', item);
         } else {
             newOrder.push(parsedIndex);
         }
-        
+
         console.log(`Position ${currentPosition}: original index ${parsedIndex}`);
     });
-    
+
     const orderJson = JSON.stringify(newOrder);
     console.log('Captured order for save:', orderJson);
     console.log('Order array:', newOrder);
-    
+
     // Also try to update the hidden state input as backup
     updateHiddenStateInput(orderJson);
-    
+
     return orderJson;
 }
 
@@ -1326,7 +1575,7 @@ function updateHiddenStateInput(orderJson) {
         'textarea.reorder-state-input',
         'input.reorder-state-input'
     ];
-    
+
     for (const selector of selectors) {
         const input = document.querySelector(selector);
         if (input) {
@@ -1337,7 +1586,7 @@ function updateHiddenStateInput(orderJson) {
             return true;
         }
     }
-    
+
     console.warn('Could not find hidden state input to update');
     return false;
 }
@@ -1351,25 +1600,25 @@ function storeOriginalIndices() {
         console.log('Grid not found, cannot store indices');
         return;
     }
-    
+
     const items = grid.querySelectorAll('.reorder-item');
     if (items.length === 0) {
         console.log('No items found in grid');
         return;
     }
-    
+
     items.forEach((item, index) => {
         const currentIndex = item.getAttribute('data-index');
-        
+
         // Always set data-original-index from data-index
         if (!item.hasAttribute('data-original-index') || item.getAttribute('data-original-index') === '') {
             item.setAttribute('data-original-index', currentIndex);
             console.log(`Item ${index}: set original-index to ${currentIndex}`);
         }
     });
-    
+
     console.log('Stored original indices for', items.length, 'items');
-    
+
     // Log all items for debugging
     items.forEach((item, index) => {
         console.log(`Item ${index}: data-index="${item.getAttribute('data-index')}", data-original-index="${item.getAttribute('data-original-index')}"`);
@@ -1394,13 +1643,13 @@ function setupReorderGridObserver() {
             });
         });
     });
-    
+
     // Observe the entire document for changes
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
-    
+
     console.log('Reorder grid observer initialized');
 }
 
@@ -1409,11 +1658,11 @@ function setupReorderGridObserver() {
  */
 function initializeReorderFeature() {
     console.log('Initializing preview reorder feature...');
-    
+
     // Try to initialize immediately if grid exists
     storeOriginalIndices();
     initializePreviewReorder();
-    
+
     // Setup observer for future grid loads (when modal opens)
     setupReorderGridObserver();
 }
@@ -1465,7 +1714,7 @@ function getCurrentDirPath(tabname, extra_networks_tabname) {
 function setCurrentDirPath(tabname, extra_networks_tabname, path) {
     const state = initDirState(tabname, extra_networks_tabname);
     state.currentPath = path;
-    
+
     console.log(`[DirNav] Set path for ${tabname}_${extra_networks_tabname}:`, path);
 }
 
@@ -1477,19 +1726,19 @@ function extraNetworksNavigateDir(tabname, extra_networks_tabname, path, event) 
         event.preventDefault();
         event.stopPropagation();
     }
-    
+
     console.log(`[DirNav] Navigate to:`, path);
-    
+
     // Normalize path
     path = path.replace(/\\/g, '/').replace(/\/+$/, '');
     if (path) path = path + '/';
-    
+
     // Update state
     setCurrentDirPath(tabname, extra_networks_tabname, path);
-    
+
     // Update UI
     updateDirNavigation(tabname, extra_networks_tabname);
-    
+
     // Filter cards to show only those in current path
     filterCardsByPath(tabname, extra_networks_tabname, path);
 }
@@ -1500,39 +1749,39 @@ function extraNetworksNavigateDir(tabname, extra_networks_tabname, path, event) 
 function updateDirNavigation(tabname, extra_networks_tabname) {
     const currentPath = getCurrentDirPath(tabname, extra_networks_tabname);
     const dirsContainer = document.getElementById(`${tabname}_${extra_networks_tabname}_dirs`);
-    
+
     if (!dirsContainer) {
         console.warn('[DirNav] Directory container not found');
         return;
     }
-    
+
     console.log(`[DirNav] Updating navigation for path:`, currentPath);
-    
+
     // Get all directory buttons
     const allDirButtons = Array.from(dirsContainer.querySelectorAll('.extra-network-subdir-button'));
-    
+
     // Collect all unique directories
     const allDirs = new Set();
     allDirButtons.forEach(btn => {
         const path = btn.getAttribute('data-path');
         if (path) allDirs.add(path);
     });
-    
+
     console.log(`[DirNav] Found ${allDirs.size} total directories`);
-    
+
     // Filter to immediate children only
     const immediateChildren = new Set();
-    
+
     for (const dir of allDirs) {
         // Skip if not under current path
         if (currentPath && !dir.startsWith(currentPath)) {
             continue;
         }
-        
+
         // Get relative path from current path
         let relative = currentPath ? dir.substring(currentPath.length) : dir;
         relative = relative.replace(/^\/+/, '');
-        
+
         // Only include immediate children (no nested subdirectories)
         if (relative.includes('/')) {
             // This is a nested child, extract immediate parent
@@ -1544,9 +1793,9 @@ function updateDirNavigation(tabname, extra_networks_tabname) {
             immediateChildren.add(dir);
         }
     }
-    
+
     console.log(`[DirNav] ${immediateChildren.size} immediate children:`, Array.from(immediateChildren));
-    
+
     // Update button visibility
     allDirButtons.forEach(btn => {
         const btnPath = btn.getAttribute('data-path');
@@ -1559,7 +1808,7 @@ function updateDirNavigation(tabname, extra_networks_tabname) {
             btn.style.display = 'none';
         }
     });
-    
+
     // Update breadcrumb
     updateBreadcrumb(tabname, extra_networks_tabname, currentPath);
 }
@@ -1570,7 +1819,7 @@ function updateDirNavigation(tabname, extra_networks_tabname) {
 function updateBreadcrumb(tabname, extra_networks_tabname, currentPath) {
     // Try multiple selectors
     let breadcrumbContainer = document.querySelector(`#${tabname}_${extra_networks_tabname}_dirs .extra-network-breadcrumb`);
-    
+
     // If not found, try to find parent dirs container and look inside
     if (!breadcrumbContainer) {
         const dirsContainer = document.getElementById(`${tabname}_${extra_networks_tabname}_dirs`);
@@ -1578,44 +1827,44 @@ function updateBreadcrumb(tabname, extra_networks_tabname, currentPath) {
             breadcrumbContainer = dirsContainer.querySelector('.extra-network-breadcrumb');
         }
     }
-    
+
     if (!breadcrumbContainer) {
         console.warn('[DirNav] Breadcrumb container not found for', `${tabname}_${extra_networks_tabname}`);
         return;
     }
-    
+
     // Build breadcrumb HTML
     const parts = [];
-    
+
     // Home button
     const homeActive = !currentPath ? ' extra-network-breadcrumb-active' : '';
     parts.push(`
-        <button class='extra-network-breadcrumb-item${homeActive}' 
+        <button class='extra-network-breadcrumb-item${homeActive}'
                 onclick='extraNetworksNavigateDir("${tabname}", "${extra_networks_tabname}", "", event)'>
             Home
         </button>
     `);
-    
+
     // Path segments
     if (currentPath) {
         const pathParts = currentPath.split('/').filter(p => p);
         let accumulated = '';
-        
+
         pathParts.forEach((part, index) => {
             accumulated += part + '/';
             const isLast = (index === pathParts.length - 1);
             const activeClass = isLast ? ' extra-network-breadcrumb-active' : '';
-            
+
             parts.push(`<span class='extra-network-breadcrumb-separator'>›</span>`);
             parts.push(`
-                <button class='extra-network-breadcrumb-item${activeClass}' 
+                <button class='extra-network-breadcrumb-item${activeClass}'
                         onclick='extraNetworksNavigateDir("${tabname}", "${extra_networks_tabname}", "${accumulated}", event)'>
                     ${escapeHtml(part)}
                 </button>
             `);
         });
     }
-    
+
     breadcrumbContainer.innerHTML = parts.join('');
     breadcrumbContainer.setAttribute('data-current-path', currentPath);
 }
@@ -1625,12 +1874,12 @@ function updateBreadcrumb(tabname, extra_networks_tabname, currentPath) {
  */
 function filterCardsByPath(tabname, extra_networks_tabname, path) {
     const cardsContainer = document.getElementById(`${tabname}_${extra_networks_tabname}_cards`);
-    
+
     if (!cardsContainer) {
         console.warn('[DirNav] Cards container not found for', `${tabname}_${extra_networks_tabname}`);
         return;
     }
-    
+
     // Wait a bit if cards aren't loaded yet
     const allCards = cardsContainer.querySelectorAll('.card');
     if (allCards.length === 0) {
@@ -1638,25 +1887,25 @@ function filterCardsByPath(tabname, extra_networks_tabname, path) {
         setTimeout(() => filterCardsByPath(tabname, extra_networks_tabname, path), 200);
         return;
     }
-    
+
     console.log(`[DirNav] Filtering ${allCards.length} cards for path:`, path);
-    
+
     let visibleCount = 0;
-    
+
     allCards.forEach(card => {
         // Get card's search terms (which include the path)
         const searchTerms = Array.from(card.querySelectorAll('.search_terms'))
             .map(span => span.textContent.toLowerCase())
             .join(' ');
-        
+
         // Normalize search terms path
         const cardPath = searchTerms.replace(/\\/g, '/');
-        
+
         // Show card if:
         // - We're at root (show all)
         // - Card path starts with current path (in this folder or subfolders)
         const shouldShow = !path || cardPath.includes(path.toLowerCase());
-        
+
         if (shouldShow) {
             card.style.display = '';
             visibleCount++;
@@ -1664,7 +1913,7 @@ function filterCardsByPath(tabname, extra_networks_tabname, path) {
             card.style.display = 'none';
         }
     });
-    
+
     console.log(`[DirNav] Showing ${visibleCount}/${allCards.length} cards`);
 }
 
@@ -1682,23 +1931,23 @@ function escapeHtml(text) {
  */
 function initializeExtraNetworksDirNav() {
     console.log('[DirNav] Initializing directory navigation');
-    
+
     // Find all extra networks tabs
     const allDirsContainers = document.querySelectorAll('[id$="_dirs"]');
-    
+
     allDirsContainers.forEach(container => {
         const id = container.id;
         const match = id.match(/^(.+)_(.+)_dirs$/);
-        
+
         if (match) {
             const tabname = match[1];
             const extra_networks_tabname = match[2];
-            
+
             console.log(`[DirNav] Found: ${tabname}_${extra_networks_tabname}`);
-            
+
             // Initialize state
             initDirState(tabname, extra_networks_tabname);
-            
+
             // Wait for cards to load before initializing navigation
             waitForCards(tabname, extra_networks_tabname);
         }
@@ -1711,11 +1960,11 @@ function initializeExtraNetworksDirNav() {
 function waitForCards(tabname, extra_networks_tabname, attempts = 0) {
     const cardsContainer = document.getElementById(`${tabname}_${extra_networks_tabname}_cards`);
     const cards = cardsContainer ? cardsContainer.querySelectorAll('.card') : [];
-    
+
     if (cards.length > 0 || attempts > 50) {
         // Cards loaded or timeout
         console.log(`[DirNav] Cards loaded for ${tabname}_${extra_networks_tabname}: ${cards.length} cards`);
-        
+
         // Set up initial navigation (root level)
         setTimeout(() => {
             updateDirNavigation(tabname, extra_networks_tabname);
@@ -1743,7 +1992,7 @@ function setupExtraNetworksObserver() {
                         if (match) {
                             const tabname = match[1];
                             const extra_networks_tabname = match[2];
-                            
+
                             // Re-apply current filter
                             const currentPath = getCurrentDirPath(tabname, extra_networks_tabname);
                             filterCardsByPath(tabname, extra_networks_tabname, currentPath);
@@ -1753,7 +2002,7 @@ function setupExtraNetworksObserver() {
             });
         });
     });
-    
+
     // Observe all card containers
     const cardContainers = document.querySelectorAll('[id$="_cards"]');
     cardContainers.forEach(container => {
@@ -1788,19 +2037,19 @@ if (originalApplyFilter) {
     window.applyExtraNetworkFilter = function(tabname) {
         // Call original function
         const result = originalApplyFilter.apply(this, arguments);
-        
+
         // Re-apply directory navigation after filter
         const match = tabname.match(/^(.+)_(.+)$/);
         if (match) {
             const tab = match[1];
             const type = match[2];
             const currentPath = getCurrentDirPath(tab, type);
-            
+
             setTimeout(() => {
                 filterCardsByPath(tab, type, currentPath);
             }, 100);
         }
-        
+
         return result;
     };
 }

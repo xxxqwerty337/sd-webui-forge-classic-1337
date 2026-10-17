@@ -165,56 +165,56 @@ def get_single_card(page: str = "", tabname: str = "", name: str = ""):
 
 def toggle_pin(page: str, tabname: str, name: str):
     from starlette.responses import JSONResponse
-    
+
     # Case-insensitive page lookup
     page_obj = next(iter([x for x in extra_pages if x.name.lower() == page.lower()]), None)
-    
+
     if not page_obj:
         # Debug: list available pages
         available_pages = [x.name for x in extra_pages]
         return JSONResponse({
-            "success": False, 
+            "success": False,
             "error": f"Page not found: {page}. Available pages: {available_pages}"
         })
-    
+
     try:
         # Get current item
         item = page_obj.items.get(name)
         if not item:
             return JSONResponse({"success": False, "error": "Item not found"})
-        
+
         # Get user metadata
         user_metadata = item.get('user_metadata', {})
-        
+
         # Toggle pinned state
         current_pinned = user_metadata.get('pinned', False)
         new_pinned = not current_pinned
         user_metadata['pinned'] = new_pinned
-        
+
         # Save to file
         filename = item.get("filename", None)
         if filename:
             basename, ext = os.path.splitext(filename)
             metadata_path = basename + '.json'
-            
+
             import json
             with open(metadata_path, "w", encoding="utf8") as file:
                 json.dump(user_metadata, file, indent=4, ensure_ascii=False)
-            
+
             # Update lister cache
             page_obj.lister.update_file_entry(metadata_path)
-        
+
         # Update item in memory
         item['user_metadata'] = user_metadata
         item['pinned'] = new_pinned
         item['sort_keys']['pinned'] = 1 if new_pinned else 0
-        
+
         return JSONResponse({
-            "success": True, 
+            "success": True,
             "pinned": new_pinned,
             "name": name
         })
-        
+
     except Exception as e:
         errors.display(e, f"toggling pin for {name}")
         return JSONResponse({"success": False, "error": str(e)})
@@ -308,7 +308,7 @@ class ExtraNetworksPage:
         """
         preview = item.get("preview", None)
         preview_urls = item.get("preview_urls", [])
-        
+
         style_height = f"height: {shared.opts.extra_networks_card_height}px;" if shared.opts.extra_networks_card_height else ''
         style_width = f"width: {shared.opts.extra_networks_card_width}px;" if shared.opts.extra_networks_card_width else ''
         style_font_size = f"font-size: {shared.opts.extra_networks_card_text_scale*100}%;"
@@ -319,18 +319,24 @@ class ExtraNetworksPage:
             preview = preview_urls[0]  # First preview is shown by default
             preview_data_attr = f'data-preview-urls="{html.escape(json.dumps(preview_urls))}"'
             preview_count = len(preview_urls)
+
+            # Per-preview activation texts (same order as preview_urls), read by cardClicked()
+            preview_texts = item.get("preview_activation_texts")
+            if isinstance(preview_texts, list) and len(preview_texts) == len(preview_urls) and any(preview_texts):
+                preview_data_attr += f' data-preview-activation-texts="{html.escape(json.dumps(preview_texts, ensure_ascii=False))}"'
         else:
             # Fallback to old single preview format
             preview_data_attr = ''
             preview_count = 1 if preview else 0
-        
+
 
         background_image = f'<img src="{html.escape(preview)}" class="preview" loading="lazy" {preview_data_attr}>' if preview else ''
 
         onclick = item.get("onclick", None)
         if onclick is None:  # Textual Inversion / LoRA
             # Don't quote prompt/neg_prompt since they are stored as js strings already.
-            onclick_js_tpl = "cardClicked('{tabname}', {prompt}, {neg_prompt}, {allow_neg});"
+            # `this` lets cardClicked() find the card and the preview currently showing.
+            onclick_js_tpl = "cardClicked('{tabname}', {prompt}, {neg_prompt}, {allow_neg}, this);"
             onclick = onclick_js_tpl.format(
                 **{
                     "tabname": tabname,
@@ -445,7 +451,7 @@ class ExtraNetworksPage:
                 # Template doesn't have nav button placeholders, inject directly
                 args['copy_path_button'] = btn_nav_prev + btn_nav_next + args['copy_path_button']
 
-                
+
         if template:
             return template.format(**args)
         else:
@@ -603,10 +609,10 @@ class ExtraNetworksPage:
 
     def create_dirs_view_html(self, tabname: str) -> str:
         """Generates HTML for displaying folders with hierarchical navigation.
-        
+
         Generates ALL directory buttons - JavaScript will filter visibility.
         """
-        
+
         # Get all subdirectories (complete tree)
         all_subdirs = {}
         for parentdir in [os.path.abspath(x) for x in self.allowed_directories_for_previews()]:
@@ -618,7 +624,7 @@ class ExtraNetworksPage:
                         continue
 
                     subdir = os.path.abspath(x)[len(parentdir):].replace("\\", "/")
-                    
+
                     # Remove leading slash
                     while subdir.startswith("/"):
                         subdir = subdir[1:]
@@ -627,7 +633,7 @@ class ExtraNetworksPage:
                     is_empty = len(os.listdir(x)) == 0
                     if is_empty:
                         continue
-                        
+
                     # Add trailing slash for directories
                     if not subdir.endswith("/"):
                         subdir = subdir + "/"
@@ -643,23 +649,23 @@ class ExtraNetworksPage:
         for subdir in sorted(all_subdirs.keys(), key=shared.natural_sort_key):
             # Display name (just the folder name for now, JavaScript will update it)
             display_name = subdir.rstrip("/")
-            
+
             dirs_buttons.append(f"""
-        <button class='lg secondary gradio-button custom-button extra-network-subdir-button' 
+        <button class='lg secondary gradio-button custom-button extra-network-subdir-button'
                 data-path='{html.escape(subdir, quote=True)}'
                 onclick='extraNetworksNavigateDir("{tabname}", "{self.extra_networks_tabname}", "{html.escape(subdir, quote=True)}", event)'>
         {html.escape(display_name)}
         </button>
             """)
-        
+
         dirs_html = "".join(dirs_buttons)
-        
+
         # Initial breadcrumb (Home) - JavaScript will update it
-        breadcrumb_html = f"""<button class='extra-network-breadcrumb-item extra-network-breadcrumb-active' 
+        breadcrumb_html = f"""<button class='extra-network-breadcrumb-item extra-network-breadcrumb-active'
                                        onclick='extraNetworksNavigateDir("{tabname}", "{self.extra_networks_tabname}", "", event)'>
                                 Home
                                 </button>"""
-        
+
         # Combine breadcrumb and directory buttons
         return f"""
         <div class='extra-network-breadcrumb' data-current-path=''>{breadcrumb_html}</div>
@@ -774,26 +780,26 @@ class ExtraNetworksPage:
                 return self.link_preview(file)
 
         return None
-    
-    def find_all_previews(self, path):
+
+    def find_all_preview_paths(self, path):
         """
-        Find ALL preview images for a given path.
-        Returns a list of preview URLs in order:
+        Find ALL preview image files for a given path (without extension).
+        Returns a list of file paths in order:
         - loraex.png (main/default, always first if exists)
         - loraex.preview.1.png
         - loraex.preview.2.png
         - ... and so on
         """
-        preview_urls = []
+        preview_paths = []
         extensions = allowed_preview_extensions()
-        
+
         # First, check for main preview (loraex.png) - no .preview. suffix
         for ext in extensions:
             main_preview = f"{path}.{ext}"
             if self.lister.exists(main_preview):
-                preview_urls.append(self.link_preview(main_preview))
+                preview_paths.append(main_preview)
                 break  # Only one main preview
-        
+
         # Then, check for numbered previews (loraex.preview.1.png, loraex.preview.2.png, etc.)
         preview_index = 1
         max_previews = 100  # Safety limit
@@ -802,15 +808,24 @@ class ExtraNetworksPage:
             for ext in extensions:
                 numbered_preview = f"{path}.preview.{preview_index}.{ext}"
                 if self.lister.exists(numbered_preview):
-                    preview_urls.append(self.link_preview(numbered_preview))
+                    preview_paths.append(numbered_preview)
                     found_preview = True
                     break  # Found one for this index, move to next
-            
+
             if not found_preview:
                 break  # No more previews found
-            
+
             preview_index += 1
-        
+
+        return preview_paths
+
+    def find_all_previews(self, path):
+        """
+        Find ALL preview images for a given path.
+        Returns a list of preview URLs in the same order as find_all_preview_paths(),
+        or None if there are none.
+        """
+        preview_urls = [self.link_preview(p) for p in self.find_all_preview_paths(path)]
         return preview_urls if preview_urls else None
 
     def find_embedded_preview(self, path, name, metadata):
@@ -908,7 +923,7 @@ def create_ui(interface: gr.Blocks, unrelated_tabs, tabname):
             editor = page.create_user_metadata_editor(ui, tabname)
             editor.create_ui()
             ui.user_metadata_editors.append(editor)
-            
+
             related_tabs.append(tab)
 
     ui.button_save_preview = gr.Button("Save preview", elem_id=f"{tabname}_save_preview", visible=False)
@@ -942,25 +957,25 @@ def create_ui(interface: gr.Blocks, unrelated_tabs, tabname):
                         size="lg",
                         elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_fetch_btn"
                     )
-            
+
             # Hidden inputs to capture current filter state
             batch_search_state = gr.Textbox(value="", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_search")
             batch_dir_state = gr.Textbox(value="", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_dir")
             batch_ui_preset_state = gr.Textbox(value="3", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_preset")
-            
+
             batch_status = gr.HTML(elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_status")
-            
+
             # JavaScript to capture current filter state before calling Python
             capture_filters_js = f"""
             function() {{
                 // Get search text
                 let searchInput = gradioApp().querySelector('#{tabname}_{page.extra_networks_tabname}_extra_search');
                 let searchText = searchInput ? searchInput.value : '';
-                
+
                 // Get current directory from breadcrumb
                 let breadcrumb = gradioApp().querySelector('#{tabname}_{page.extra_networks_tabname}_dirs .extra-network-breadcrumb');
                 let currentDir = breadcrumb ? breadcrumb.getAttribute('data-current-path') || '' : '';
-                
+
                 // Get UI preset (SD version filter)
                 let radioUI = gradioApp().querySelector('#forge_ui_preset');
                 let uiPreset = '3'; // Default to 'all'
@@ -973,16 +988,16 @@ def create_ui(interface: gr.Blocks, unrelated_tabs, tabname):
                         }}
                     }}
                 }}
-                
+
                 console.log('Batch fetch filters:', {{search: searchText, dir: currentDir, preset: uiPreset}});
-                
+
                 return [searchText, currentDir, uiPreset];
             }}
             """
-            
+
             # Hidden state to store updated LoRA names
             batch_updated_names = gr.Textbox(value="[]", visible=False, elem_id=f"{tabname}_{page.extra_networks_tabname}_batch_updated_names")
-            
+
             # Connect button with filter capture
             batch_fetch_btn.click(
                 fn=lambda search, dir, preset: page.batch_fetch_civitai_metadata(tabname, search, dir, preset),
